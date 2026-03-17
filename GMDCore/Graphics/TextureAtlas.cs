@@ -166,4 +166,36 @@ public class TextureAtlas
         Animation animation = GetAnimation(animationName);
         return new AnimatedSprite(animation);
     }
+
+    // Creates a TextureAtlas by splitting a texture into a uniform grid.
+    // Regions are named "frame_1", "frame_2", ... (1-based, row-major order),
+    // matching the 1-based quad indexing used in the Löve2D source project.
+    public static TextureAtlas FromGrid(Texture2D texture, int frameWidth, int frameHeight)
+    {
+        var atlas = new TextureAtlas(texture);
+        int cols = texture.Width / frameWidth;
+        int rows = texture.Height / frameHeight;
+        int index = 1;
+
+        for (int y = 0; y < rows; y++)
+        {
+            for (int x = 0; x < cols; x++)
+            {
+                atlas.AddRegion($"frame_{index}", x * frameWidth, y * frameHeight, frameWidth, frameHeight);
+                index++;
+            }
+        }
+
+        return atlas;
+    }
+
+    // Creates an Animation from 1-based frame indices within a grid atlas.
+    public Animation CreateAnimation(int[] frameIndices, double intervalSeconds, bool loop = true)
+    {
+        var frames = new System.Collections.Generic.List<TextureRegion>(frameIndices.Length);
+        foreach (int i in frameIndices)
+            frames.Add(GetRegion($"frame_{i}"));
+
+        return new Animation(frames, TimeSpan.FromSeconds(intervalSeconds), loop);
+    }
 }

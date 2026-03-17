@@ -1,31 +1,24 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Zelda.States.EntityStates;
+using Zelda.World;
 
 namespace Zelda.Entities;
 
-public class Player : Entity
+public class Enemy : Entity
 {
     public EntityStateBase State { get; private set; }
-
-    // The player's collision box uses the bottom half of the sprite for
-    // top-down perspective, matching the Löve2D source.
-    public override bool Collides(IEntity other)
-    {
-        var selfRect = new Rectangle(
-            (int)Position.X,
-            (int)(Position.Y + Height / 2f),
-            Width,
-            Height - Height / 2
-        );
-        return Collidable && other.Collidable && selfRect.Intersects(other.Bounds);
-    }
 
     public void ChangeState(EntityStateBase newState)
     {
         State?.Exit();
         State = newState;
         State.Enter();
+    }
+
+    public void ProcessAI(Room room, GameTime gameTime)
+    {
+        State?.ProcessAI(room, gameTime);
     }
 
     public override void Update(GameTime gameTime)

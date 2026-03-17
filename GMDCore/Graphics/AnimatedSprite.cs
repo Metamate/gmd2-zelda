@@ -9,6 +9,8 @@ public class AnimatedSprite : Sprite
     private TimeSpan _elapsed;
     private Animation _animation;
 
+    public int TimesPlayed { get; set; }
+
     public Animation Animation
     {
         get => _animation;
@@ -22,7 +24,17 @@ public class AnimatedSprite : Sprite
         _animation = animation;
         _currentFrame = 0;
         _elapsed = TimeSpan.Zero;
+        TimesPlayed = 0;
         Region = _animation.Frames[0];
+    }
+
+    public void Refresh()
+    {
+        _currentFrame = 0;
+        _elapsed = TimeSpan.Zero;
+        TimesPlayed = 0;
+        if (_animation != null)
+            Region = _animation.Frames[0];
     }
 
     public AnimatedSprite() { }
@@ -43,7 +55,15 @@ public class AnimatedSprite : Sprite
 
             if (_currentFrame >= _animation.Frames.Count)
             {
-                _currentFrame = 0;
+                if (_animation.Loop)
+                {
+                    _currentFrame = 0;
+                }
+                else
+                {
+                    _currentFrame = _animation.Frames.Count - 1;
+                    TimesPlayed++;
+                }
             }
 
             Region = _animation.Frames[_currentFrame];
