@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="GMDCore/GMDCore.csproj" />
+  <Project Path="Zelda/Zelda.csproj" />
+</Solution>
