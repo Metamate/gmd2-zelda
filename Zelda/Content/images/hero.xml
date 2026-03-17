@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas>
+    <Texture>images/heroatlas</Texture>
+    <Regions>
+        <Region name="hero1" x="0" y="0" width="16" height="20" />
+        <Region name="hero2" x="16" y="0" width="16" height="20" />
+        <Region name="hero3" x="32" y="0" width="16" height="20" />
+        <Region name="hero4" x="48" y="0" width="16" height="20" />
+        <Region name="hero5" x="64" y="0" width="16" height="20" />
+        <Region name="hero6" x="80" y="0" width="16" height="20" />
+        <Region name="hero7" x="96" y="0" width="16" height="20" />
+        <Region name="hero8" x="112" y="0" width="16" height="20" />
+        <Region name="hero9" x="128" y="0" width="16" height="20" />
+        <Region name="hero10" x="144" y="0" width="16" height="20" />
+        <Region name="hero11" x="160" y="0" width="16" height="20" />
+    </Regions>
+    <Animations>
+        <Animation name="idle-animation" delay="1000">
+            <Frame region="hero1" />
+        </Animation>
+        <Animation name="walk-animation" delay="100">
+            <Frame region="hero10" />
+            <Frame region="hero11" />
+        </Animation>
+        <Animation name="jump-animation" delay="1000">
+            <Frame region="hero3" />
+        </Animation>
+        <Animation name="fall-animation" delay="1000">
+            <Frame region="hero3" />
+        </Animation>
+        <Animation name="duck-animation" delay="1000">
+            <Frame region="hero4" />
+        </Animation>
+    </Animations>
+</TextureAtlas>

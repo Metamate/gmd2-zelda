@@ -20,3 +20,24 @@
 /processorParam:TextureFormat=Compressed
 /build:fonts/font.spritefont
 
+#begin images/heroatlas.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/heroatlas.png;images/heroatlas.png
+
+#begin images/hero.xml
+/copy:images/hero.xml
+
+#begin sounds/music.wav
+/importer:WavImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:sounds/music.wav
+
