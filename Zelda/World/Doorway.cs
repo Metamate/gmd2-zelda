@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using GMDCore.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -11,7 +12,7 @@ namespace Zelda.World;
 public class Doorway : IEntity
 {
     private readonly Direction _direction;
-    private readonly TextureAtlas _tileAtlas;
+    private readonly Tileset _tileset;
 
     public bool IsOpen { get; set; }
 
@@ -24,17 +25,38 @@ public class Doorway : IEntity
     public bool IsSolid => false;
     public bool Active { get; set; } = true;
 
-    public Doorway(Direction direction, bool open, TextureAtlas tileAtlas)
+    // Each door variant is 4 tiles; each entry is (1-based tile ID, x offset, y offset).
+    private readonly record struct TilePlacement(int Id, int Dx, int Dy);
+
+    private const int Ts = GameSettings.TileSize;
+
+    private static readonly Dictionary<Direction, TilePlacement[]> OpenLayouts = new()
+    {
+        [Direction.Left]  = [new(181, -Ts,  0), new(182,  0,  0), new(200, -Ts, Ts), new(201,  0, Ts)],
+        [Direction.Right] = [new(172,   0,  0), new(173, Ts,  0), new(191,   0, Ts), new(192, Ts, Ts)],
+        [Direction.Up]    = [new( 98,   0, -Ts), new( 99, Ts, -Ts), new(117,  0,  0), new(118, Ts,  0)],
+        [Direction.Down]  = [new(141,   0,  0), new(142, Ts,  0), new(160,   0, Ts), new(161, Ts, Ts)],
+    };
+
+    private static readonly Dictionary<Direction, TilePlacement[]> ClosedLayouts = new()
+    {
+        [Direction.Left]  = [new(219, -Ts,  0), new(220,  0,  0), new(238, -Ts, Ts), new(239,  0, Ts)],
+        [Direction.Right] = [new(174,   0,  0), new(175, Ts,  0), new(193,   0, Ts), new(194, Ts, Ts)],
+        [Direction.Up]    = [new(134,   0, -Ts), new(135, Ts, -Ts), new(153,  0,  0), new(154, Ts,  0)],
+        [Direction.Down]  = [new(216,   0,  0), new(217, Ts,  0), new(235,   0, Ts), new(236, Ts, Ts)],
+    };
+
+    public Doorway(Direction direction, bool open, Tileset tileset)
     {
         _direction = direction;
         IsOpen = open;
-        _tileAtlas = tileAtlas;
+        _tileset = tileset;
 
-        int ts      = GameSettings.TileSize;
-        int offX    = GameSettings.MapRenderOffsetX;
-        int offY    = GameSettings.MapRenderOffsetY;
-        int mapW    = GameSettings.MapWidth;
-        int mapH    = GameSettings.MapHeight;
+        int ts   = GameSettings.TileSize;
+        int offX = GameSettings.MapRenderOffsetX;
+        int offY = GameSettings.MapRenderOffsetY;
+        int mapW = GameSettings.MapWidth;
+        int mapH = GameSettings.MapHeight;
 
         switch (direction)
         {
@@ -68,85 +90,15 @@ public class Doorway : IEntity
     // Draw with an additional offset used during room-shift camera translation
     public void DrawAt(SpriteBatch spriteBatch, Vector2 adjacentOffset)
     {
-        int ts = GameSettings.TileSize;
         Vector2 p = Position + adjacentOffset;
-
-        // Tile indices match the Löve2D quad layout (1-based frame names from FromGrid).
-        switch (_direction)
-        {
-            case Direction.Left:
-                if (IsOpen)
-                {
-                    DrawTile(spriteBatch, 181, new Vector2(p.X - ts, p.Y));
-                    DrawTile(spriteBatch, 182, new Vector2(p.X,      p.Y));
-                    DrawTile(spriteBatch, 200, new Vector2(p.X - ts, p.Y + ts));
-                    DrawTile(spriteBatch, 201, new Vector2(p.X,      p.Y + ts));
-                }
-                else
-                {
-                    DrawTile(spriteBatch, 219, new Vector2(p.X - ts, p.Y));
-                    DrawTile(spriteBatch, 220, new Vector2(p.X,      p.Y));
-                    DrawTile(spriteBatch, 238, new Vector2(p.X - ts, p.Y + ts));
-                    DrawTile(spriteBatch, 239, new Vector2(p.X,      p.Y + ts));
-                }
-                break;
-
-            case Direction.Right:
-                if (IsOpen)
-                {
-                    DrawTile(spriteBatch, 172, new Vector2(p.X,      p.Y));
-                    DrawTile(spriteBatch, 173, new Vector2(p.X + ts, p.Y));
-                    DrawTile(spriteBatch, 191, new Vector2(p.X,      p.Y + ts));
-                    DrawTile(spriteBatch, 192, new Vector2(p.X + ts, p.Y + ts));
-                }
-                else
-                {
-                    DrawTile(spriteBatch, 174, new Vector2(p.X,      p.Y));
-                    DrawTile(spriteBatch, 175, new Vector2(p.X + ts, p.Y));
-                    DrawTile(spriteBatch, 193, new Vector2(p.X,      p.Y + ts));
-                    DrawTile(spriteBatch, 194, new Vector2(p.X + ts, p.Y + ts));
-                }
-                break;
-
-            case Direction.Up:
-                if (IsOpen)
-                {
-                    DrawTile(spriteBatch, 98,  new Vector2(p.X,      p.Y - ts));
-                    DrawTile(spriteBatch, 99,  new Vector2(p.X + ts, p.Y - ts));
-                    DrawTile(spriteBatch, 117, new Vector2(p.X,      p.Y));
-                    DrawTile(spriteBatch, 118, new Vector2(p.X + ts, p.Y));
-                }
-                else
-                {
-                    DrawTile(spriteBatch, 134, new Vector2(p.X,      p.Y - ts));
-                    DrawTile(spriteBatch, 135, new Vector2(p.X + ts, p.Y - ts));
-                    DrawTile(spriteBatch, 153, new Vector2(p.X,      p.Y));
-                    DrawTile(spriteBatch, 154, new Vector2(p.X + ts, p.Y));
-                }
-                break;
-
-            case Direction.Down:
-                if (IsOpen)
-                {
-                    DrawTile(spriteBatch, 141, new Vector2(p.X,      p.Y));
-                    DrawTile(spriteBatch, 142, new Vector2(p.X + ts, p.Y));
-                    DrawTile(spriteBatch, 160, new Vector2(p.X,      p.Y + ts));
-                    DrawTile(spriteBatch, 161, new Vector2(p.X + ts, p.Y + ts));
-                }
-                else
-                {
-                    DrawTile(spriteBatch, 216, new Vector2(p.X,      p.Y));
-                    DrawTile(spriteBatch, 217, new Vector2(p.X + ts, p.Y));
-                    DrawTile(spriteBatch, 235, new Vector2(p.X,      p.Y + ts));
-                    DrawTile(spriteBatch, 236, new Vector2(p.X + ts, p.Y + ts));
-                }
-                break;
-        }
+        foreach (var t in (IsOpen ? OpenLayouts : ClosedLayouts)[_direction])
+            DrawTile(spriteBatch, t.Id, new Vector2(p.X + t.Dx, p.Y + t.Dy));
     }
 
-    private void DrawTile(SpriteBatch spriteBatch, int frameIndex, Vector2 position)
+    private void DrawTile(SpriteBatch spriteBatch, int tileId, Vector2 position)
     {
-        _tileAtlas.GetRegion($"frame_{frameIndex}").Draw(spriteBatch, position, Color.White);
+        // tileId is 1-based (Löve2D layout); Tileset is 0-based
+        _tileset.GetTile(tileId - 1).Draw(spriteBatch, position, Color.White);
     }
 
     public bool Collides(IEntity other) =>

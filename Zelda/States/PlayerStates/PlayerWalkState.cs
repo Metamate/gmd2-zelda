@@ -72,61 +72,35 @@ public class PlayerWalkState : EntityWalkState
 
     private void CheckDoorwayTransition(float dt)
     {
-        int speed = GameSettings.PlayerWalkSpeed;
-
-        switch (_player.Direction)
+        // Convert direction to a movement step vector for the probe
+        float speed = GameSettings.PlayerWalkSpeed * dt;
+        Vector2 step = _player.Direction switch
         {
-            case Direction.Left:
-                _player.Position = _player.Position with { X = _player.Position.X - speed * dt };
-                foreach (var doorway in _dungeon.CurrentRoom.Doorways)
-                {
-                    if (_player.Collides(doorway) && doorway.IsOpen)
-                    {
-                        _player.Position = _player.Position with { Y = doorway.Position.Y + 4 };
-                        _dungeon.BeginShift(Direction.Left);
-                    }
-                }
-                _player.Position = _player.Position with { X = _player.Position.X + speed * dt };
-                break;
+            Direction.Left  => new Vector2(-speed,  0),
+            Direction.Right => new Vector2( speed,  0),
+            Direction.Up    => new Vector2(0, -speed),
+            Direction.Down  => new Vector2(0,  speed),
+            _               => Vector2.Zero
+        };
 
-            case Direction.Right:
-                _player.Position = _player.Position with { X = _player.Position.X + speed * dt };
-                foreach (var doorway in _dungeon.CurrentRoom.Doorways)
-                {
-                    if (_player.Collides(doorway) && doorway.IsOpen)
-                    {
-                        _player.Position = _player.Position with { Y = doorway.Position.Y + 4 };
-                        _dungeon.BeginShift(Direction.Right);
-                    }
-                }
-                _player.Position = _player.Position with { X = _player.Position.X - speed * dt };
-                break;
+        bool horizontal = step.Y == 0;
 
-            case Direction.Up:
-                _player.Position = _player.Position with { Y = _player.Position.Y - speed * dt };
-                foreach (var doorway in _dungeon.CurrentRoom.Doorways)
-                {
-                    if (_player.Collides(doorway) && doorway.IsOpen)
-                    {
-                        _player.Position = _player.Position with { X = doorway.Position.X + 8 };
-                        _dungeon.BeginShift(Direction.Up);
-                    }
-                }
-                _player.Position = _player.Position with { Y = _player.Position.Y + speed * dt };
-                break;
+        _player.Position += step;
 
-            case Direction.Down:
-                _player.Position = _player.Position with { Y = _player.Position.Y + speed * dt };
-                foreach (var doorway in _dungeon.CurrentRoom.Doorways)
-                {
-                    if (_player.Collides(doorway) && doorway.IsOpen)
-                    {
-                        _player.Position = _player.Position with { X = doorway.Position.X + 8 };
-                        _dungeon.BeginShift(Direction.Down);
-                    }
-                }
-                _player.Position = _player.Position with { Y = _player.Position.Y - speed * dt };
-                break;
+        foreach (var doorway in _dungeon.CurrentRoom.Doorways)
+        {
+            if (_player.Collides(doorway) && doorway.IsOpen)
+            {
+                // Align the player to the centre of the doorway on the perpendicular axis
+                if (horizontal)
+                    _player.Position = _player.Position with { Y = doorway.Position.Y + 4 };
+                else
+                    _player.Position = _player.Position with { X = doorway.Position.X + 8 };
+
+                _dungeon.BeginShift(_player.Direction);
+            }
         }
+
+        _player.Position -= step;
     }
 }

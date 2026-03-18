@@ -12,8 +12,7 @@ namespace Zelda.World;
 
 public class Room
 {
-    private readonly int[,] _tiles;
-    private readonly TextureAtlas _tileAtlas;
+    private readonly Tilemap _tilemap;
     private readonly TextureAtlas _entityAtlas;
     private readonly TextureAtlas _switchAtlas;
 
@@ -33,16 +32,15 @@ public class Room
 
     public Room(
         Player player,
-        TextureAtlas tileAtlas,
+        Tileset tileset,
         TextureAtlas entityAtlas,
         TextureAtlas switchAtlas)
     {
-        _player     = player;
-        _tileAtlas  = tileAtlas;
+        _player      = player;
         _entityAtlas = entityAtlas;
         _switchAtlas = switchAtlas;
 
-        _tiles = new int[GameSettings.MapHeight, GameSettings.MapWidth];
+        _tilemap = new Tilemap(tileset, GameSettings.MapWidth, GameSettings.MapHeight);
         GenerateWallsAndFloors();
         GenerateEntities();
         GenerateObjects();
@@ -58,24 +56,21 @@ public class Room
         {
             for (int x = 0; x < w; x++)
             {
-                if (x == 0 && y == 0)
-                    _tiles[y, x] = GameSettings.TileTopLeftCorner;
-                else if (x == w - 1 && y == 0)
-                    _tiles[y, x] = GameSettings.TileTopRightCorner;
-                else if (x == 0 && y == h - 1)
-                    _tiles[y, x] = GameSettings.TileBottomLeftCorner;
-                else if (x == w - 1 && y == h - 1)
-                    _tiles[y, x] = GameSettings.TileBottomRightCorner;
-                else if (x == 0)
-                    _tiles[y, x] = GameSettings.TileLeftWalls[Random.Next(GameSettings.TileLeftWalls.Length)];
-                else if (x == w - 1)
-                    _tiles[y, x] = GameSettings.TileRightWalls[Random.Next(GameSettings.TileRightWalls.Length)];
-                else if (y == 0)
-                    _tiles[y, x] = GameSettings.TileTopWalls[Random.Next(GameSettings.TileTopWalls.Length)];
-                else if (y == h - 1)
-                    _tiles[y, x] = GameSettings.TileBottomWalls[Random.Next(GameSettings.TileBottomWalls.Length)];
-                else
-                    _tiles[y, x] = GameSettings.TileFloors[Random.Next(GameSettings.TileFloors.Length)];
+                bool solid = x == 0 || x == w - 1 || y == 0 || y == h - 1;
+                int tileId;
+
+                if      (x == 0     && y == 0    ) tileId = GameSettings.TileTopLeftCorner;
+                else if (x == w - 1 && y == 0    ) tileId = GameSettings.TileTopRightCorner;
+                else if (x == 0     && y == h - 1) tileId = GameSettings.TileBottomLeftCorner;
+                else if (x == w - 1 && y == h - 1) tileId = GameSettings.TileBottomRightCorner;
+                else if (x == 0    ) tileId = GameSettings.TileLeftWalls[Random.Next(GameSettings.TileLeftWalls.Length)];
+                else if (x == w - 1) tileId = GameSettings.TileRightWalls[Random.Next(GameSettings.TileRightWalls.Length)];
+                else if (y == 0    ) tileId = GameSettings.TileTopWalls[Random.Next(GameSettings.TileTopWalls.Length)];
+                else if (y == h - 1) tileId = GameSettings.TileBottomWalls[Random.Next(GameSettings.TileBottomWalls.Length)];
+                else                 tileId = GameSettings.TileFloors[Random.Next(GameSettings.TileFloors.Length)];
+
+                // Tile IDs in GameSettings are 1-based (Löve2D compat); Tileset is 0-based.
+                _tilemap.SetTile(x, y, new Tile(tileId - 1, solid));
             }
         }
     }
@@ -151,10 +146,10 @@ public class Room
 
     private void GenerateDoorways()
     {
-        Doorways.Add(new Doorway(Direction.Up,    false, _tileAtlas));
-        Doorways.Add(new Doorway(Direction.Down,  false, _tileAtlas));
-        Doorways.Add(new Doorway(Direction.Left,  false, _tileAtlas));
-        Doorways.Add(new Doorway(Direction.Right, false, _tileAtlas));
+        Doorways.Add(new Doorway(Direction.Up,    false, _tilemap.Tileset));
+        Doorways.Add(new Doorway(Direction.Down,  false, _tilemap.Tileset));
+        Doorways.Add(new Doorway(Direction.Left,  false, _tilemap.Tileset));
+        Doorways.Add(new Doorway(Direction.Right, false, _tilemap.Tileset));
     }
 
     public void Update(GameTime gameTime)
@@ -207,16 +202,14 @@ public class Room
         int w    = GameSettings.MapWidth;
         int h    = GameSettings.MapHeight;
 
-        // Draw tiles
+        // Draw tiles via Tileset, offsetting into world/room position
         for (int y = 0; y < h; y++)
         {
             for (int x = 0; x < w; x++)
             {
-                int tileId = _tiles[y, x];
-                var pos = new Vector2(
-                    x * ts + offX + adjacentOffset.X,
-                    y * ts + offY + adjacentOffset.Y);
-                _tileAtlas.GetRegion($"frame_{tileId}").Draw(spriteBatch, pos, Color.White);
+                var tile = _tilemap.GetTile(x, y);
+                var pos  = new Vector2(x * ts + offX + adjacentOffset.X, y * ts + offY + adjacentOffset.Y);
+                _tilemap.Tileset.GetTile(tile.GraphicId).Draw(spriteBatch, pos, Color.White);
             }
         }
 
@@ -227,7 +220,6 @@ public class Room
         // Draw objects (switches, etc.)
         foreach (var obj in Objects)
         {
-            // Temporarily offset the object position for rendering
             var savedPos = obj.Position;
             obj.Position += adjacentOffset;
             obj.Draw(spriteBatch);

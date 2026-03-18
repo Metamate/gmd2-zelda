@@ -14,7 +14,7 @@ public class PlayState(Game1 game) : GameStateBase(game)
     private Player _player;
     private Dungeon _dungeon;
 
-    private TextureAtlas _tileAtlas;
+    private Tileset _tileset;
     private TextureAtlas _entityAtlas;
     private TextureAtlas _switchAtlas;
     private TextureAtlas _heartsAtlas;
@@ -36,7 +36,7 @@ public class PlayState(Game1 game) : GameStateBase(game)
         var heartsTex    = Game.Content.Load<Texture2D>("images/hearts");
         var switchesTex  = Game.Content.Load<Texture2D>("images/switches");
 
-        _tileAtlas    = TextureAtlas.FromGrid(tilesTex,    16, 16);
+        _tileset      = new Tileset(new TextureRegion(tilesTex, 0, 0, tilesTex.Width, tilesTex.Height), 16, 16);
         _entityAtlas  = TextureAtlas.FromGrid(entityTex,   16, 16);
         _switchAtlas  = TextureAtlas.FromGrid(switchesTex, 16, 18);
         _heartsAtlas  = TextureAtlas.FromGrid(heartsTex,   16, 16);
@@ -59,7 +59,7 @@ public class PlayState(Game1 game) : GameStateBase(game)
             _player.Animations.Add(key, anim);
 
         _dungeon = new Dungeon(_player, () => new Room(
-            _player, _tileAtlas, _entityAtlas, _switchAtlas));
+            _player, _tileset, _entityAtlas, _switchAtlas));
 
         _dungeon.OnPlayerDied += OnPlayerDied;
 
