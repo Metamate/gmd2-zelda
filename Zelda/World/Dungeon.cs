@@ -1,9 +1,9 @@
 using System;
-using GMDCore.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Zelda.Audio;
 using Zelda.Entities;
+using Zelda.Graphics;
 
 namespace Zelda.World;
 
@@ -17,9 +17,16 @@ public class Dungeon
     public Room CurrentRoom { get; private set; }
     private Room _nextRoom;
 
-    // Camera translation applied while shifting between rooms
-    private Vector2 _camera;
-    private Vector2 _cameraTarget;
+    // Camera whose Transform is combined with the screen-scale matrix each frame.
+    // During a shift it lerps from (0,0) to _shiftTarget; everything rendered through
+    // the combined matrix moves automatically — no per-object offset arithmetic needed.
+    private readonly Camera _camera = new();
+    private Vector2 _shiftTarget;
+
+    // The next room is placed at _shiftTarget and stays there; the camera lerp
+    // handles making it slide into view.
+    private Vector2 _nextRoomOffset;
+
     private Vector2 _shiftPlayerStart;
     private Vector2 _shiftPlayerEnd;
     private float _shiftProgress;
@@ -64,9 +71,8 @@ public class Dungeon
         int mapW = GameSettings.MapWidth;
         int mapH = GameSettings.MapHeight;
 
-        // Camera shifts by one full virtual screen in the transition direction
-        _camera = Vector2.Zero;
-        _cameraTarget = direction switch
+        _camera.Position = Vector2.Zero;
+        _shiftTarget = direction switch
         {
             Direction.Left  => new Vector2(-vw, 0),
             Direction.Right => new Vector2( vw, 0),
@@ -75,17 +81,18 @@ public class Dungeon
             _ => Vector2.Zero
         };
 
-        // Position the incoming room offset from the current room
-        _nextRoom.AdjacentOffset = _cameraTarget;
+        // The next room sits at _shiftTarget and never moves; the camera lerp
+        // brings it into view.
+        _nextRoomOffset = _shiftTarget;
 
         // Store player tween endpoints so they walk through the doorway
         _shiftPlayerStart = _player.Position;
         _shiftPlayerEnd = direction switch
         {
-            Direction.Right => new Vector2(vw  + offX + ts,                           _player.Position.Y),
+            Direction.Right => new Vector2(vw  + offX + ts,                             _player.Position.Y),
             Direction.Left  => new Vector2(-vw + offX + mapW * ts - ts - _player.Width, _player.Position.Y),
-            Direction.Down  => new Vector2(_player.Position.X,                          vh  + offY + _player.Height / 2f),
-            Direction.Up    => new Vector2(_player.Position.X,                         -vh  + offY + mapH * ts - ts - _player.Height),
+            Direction.Down  => new Vector2(_player.Position.X,                           vh  + offY + _player.Height / 2f),
+            Direction.Up    => new Vector2(_player.Position.X,                          -vh  + offY + mapH * ts - ts - _player.Height),
             _ => _player.Position
         };
 
@@ -95,10 +102,9 @@ public class Dungeon
     private void FinishShift()
     {
         _shifting = false;
-        _camera = Vector2.Zero;
+        _camera.Position = Vector2.Zero;
 
         CurrentRoom = _nextRoom;
-        CurrentRoom.AdjacentOffset = Vector2.Zero;
         _nextRoom = null;
 
         int ts   = GameSettings.TileSize;
@@ -111,8 +117,7 @@ public class Dungeon
         switch (_shiftDirection)
         {
             case Direction.Left:
-                _player.Position = _player.Position with
-                    { X = offX + mapW * ts - ts - _player.Width };
+                _player.Position = _player.Position with { X = offX + mapW * ts - ts - _player.Width };
                 _player.Direction = Direction.Left;
                 break;
             case Direction.Right:
@@ -120,13 +125,11 @@ public class Dungeon
                 _player.Direction = Direction.Right;
                 break;
             case Direction.Up:
-                _player.Position = _player.Position with
-                    { Y = offY + mapH * ts - ts - _player.Height };
+                _player.Position = _player.Position with { Y = offY + mapH * ts - ts - _player.Height };
                 _player.Direction = Direction.Up;
                 break;
             case Direction.Down:
-                _player.Position = _player.Position with
-                    { Y = offY + _player.Height / 2f };
+                _player.Position = _player.Position with { Y = offY + _player.Height / 2f };
                 _player.Direction = Direction.Down;
                 break;
         }
@@ -145,10 +148,9 @@ public class Dungeon
             float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
             _shiftProgress = Math.Min(1f, _shiftProgress + dt / ShiftDuration);
 
-            _camera = Vector2.Lerp(Vector2.Zero, _cameraTarget, _shiftProgress);
-
-            // Slide both rooms: current room translates with the camera, next room follows
-            _nextRoom.AdjacentOffset = _cameraTarget - _camera;
+            // Move the camera toward _shiftTarget; everything rendered through the
+            // combined camera+screen-scale matrix shifts automatically.
+            _camera.Position = Vector2.Lerp(Vector2.Zero, _shiftTarget, _shiftProgress);
 
             // Tween the player through the doorway
             _player.Position = Vector2.Lerp(_shiftPlayerStart, _shiftPlayerEnd, _shiftProgress);
@@ -168,20 +170,20 @@ public class Dungeon
     // DepthStencilState that writes 1 into the stencil buffer wherever we draw.
     private static readonly DepthStencilState WriteStencilState = new()
     {
-        StencilEnable    = true,
-        StencilFunction  = CompareFunction.Always,
-        StencilPass      = StencilOperation.Replace,
-        ReferenceStencil = 1,
+        StencilEnable     = true,
+        StencilFunction   = CompareFunction.Always,
+        StencilPass       = StencilOperation.Replace,
+        ReferenceStencil  = 1,
         DepthBufferEnable = false
     };
 
     // DepthStencilState that lets pixels through only where stencil == 0 (outside arch areas).
     private static readonly DepthStencilState ReadStencilState = new()
     {
-        StencilEnable    = true,
-        StencilFunction  = CompareFunction.Equal,
-        StencilPass      = StencilOperation.Keep,
-        ReferenceStencil = 0,
+        StencilEnable     = true,
+        StencilFunction   = CompareFunction.Equal,
+        StencilPass       = StencilOperation.Keep,
+        ReferenceStencil  = 0,
         DepthBufferEnable = false
     };
 
@@ -195,40 +197,43 @@ public class Dungeon
     //   Pass 1 – rooms drawn normally.
     //   Pass 2 – door-arch rectangles written into stencil buffer (no colour).
     //   Pass 3 – player drawn only where stencil == 0, hiding it inside arch tunnels.
-    public void Render(SpriteBatch spriteBatch, Matrix transformMatrix, Texture2D pixel)
+    //
+    // All three passes share the same worldTransform (camera + screen scale), so
+    // the camera shift is applied uniformly to rooms, arch masks, and player alike.
+    public void Render(SpriteBatch spriteBatch, Matrix screenScaleMatrix, Texture2D pixel)
     {
+        // Combine camera translation with the screen-scale matrix once.
+        // Ordering: camera translates in virtual space first, then scale to screen.
+        var worldTransform = _camera.Transform * screenScaleMatrix;
+
         // Pass 1: rooms and their entities
-        spriteBatch.Begin(transformMatrix: transformMatrix, samplerState: SamplerState.PointClamp);
-        CurrentRoom.Render(spriteBatch, -_camera);
+        spriteBatch.Begin(transformMatrix: worldTransform, samplerState: SamplerState.PointClamp);
+        CurrentRoom.Render(spriteBatch, Vector2.Zero);
         if (_nextRoom != null)
-            _nextRoom.Render(spriteBatch, _nextRoom.AdjacentOffset);
+            _nextRoom.Render(spriteBatch, _nextRoomOffset);
         spriteBatch.End();
 
-        // Pass 2: write stencil mask at every door-arch corridor
+        // Pass 2: write stencil mask at the four door-arch corridors
         spriteBatch.Begin(
-            transformMatrix:    transformMatrix,
-            samplerState:       SamplerState.PointClamp,
-            blendState:         StencilOnlyBlend,
-            depthStencilState:  WriteStencilState);
+            transformMatrix:   worldTransform,
+            samplerState:      SamplerState.PointClamp,
+            blendState:        StencilOnlyBlend,
+            depthStencilState: WriteStencilState);
         DrawArchMasks(spriteBatch, pixel);
         spriteBatch.End();
 
-        // Pass 3: player, clipped so it vanishes inside the arch tunnels
+        // Pass 3: player clipped so it vanishes inside the arch tunnels
         spriteBatch.Begin(
-            transformMatrix:    transformMatrix,
-            samplerState:       SamplerState.PointClamp,
-            depthStencilState:  ReadStencilState);
-        var savedPos = _player.Position;
-        _player.Position -= _camera;
+            transformMatrix:   worldTransform,
+            samplerState:      SamplerState.PointClamp,
+            depthStencilState: ReadStencilState);
         _player.Draw(spriteBatch);
-        _player.Position = savedPos;
         spriteBatch.End();
     }
 
-    // Write the four arch-corridor stencil rectangles, matching the Löve2D Room:render()
-    // stencil exactly. In Löve2D a single global translate (–cameraX, –cameraY) is applied
-    // before every room render, so both the current and the next room write their stencil
-    // rects at identical virtual positions; we replicate that by applying –_camera once here.
+    // Draw the four arch-corridor stencil rectangles at their fixed virtual positions.
+    // Because worldTransform already contains the camera translation, no manual offset
+    // is needed here — the camera shift is applied automatically by SpriteBatch.
     private void DrawArchMasks(SpriteBatch spriteBatch, Texture2D pixel)
     {
         int ts   = GameSettings.TileSize;
@@ -241,14 +246,9 @@ public class Dungeon
         int doorY = (int)(offY + mapH / 2f * ts - ts);
         int doorX = (int)(offX + mapW / 2f * ts - ts);
 
-        // Stencil tracks with the camera — same offset applied to rooms and player.
-        int ox = -(int)_camera.X;
-        int oy = -(int)_camera.Y;
-
-        // Positions are a direct translation of the Löve2D stencil rectangles.
-        spriteBatch.Draw(pixel, new Rectangle(-ts - 6 + ox,           doorY + oy,       ts * 2 + 6, ts * 2),      Color.White); // Left
-        spriteBatch.Draw(pixel, new Rectangle(offX + mapW * ts + ox,  doorY + oy,       ts * 2 + 6, ts * 2),      Color.White); // Right
-        spriteBatch.Draw(pixel, new Rectangle(doorX + ox,             -ts - 6 + oy,     ts * 2,     ts * 2 + 12), Color.White); // Top
-        spriteBatch.Draw(pixel, new Rectangle(doorX + ox,             vh - ts - 6 + oy, ts * 2,     ts * 2 + 12), Color.White); // Bottom
+        spriteBatch.Draw(pixel, new Rectangle(-ts - 6,          doorY,       ts * 2 + 6, ts * 2),      Color.White); // Left
+        spriteBatch.Draw(pixel, new Rectangle(offX + mapW * ts, doorY,       ts * 2 + 6, ts * 2),      Color.White); // Right
+        spriteBatch.Draw(pixel, new Rectangle(doorX,            -ts - 6,     ts * 2,     ts * 2 + 12), Color.White); // Top
+        spriteBatch.Draw(pixel, new Rectangle(doorX,            vh - ts - 6, ts * 2,     ts * 2 + 12), Color.White); // Bottom
     }
 }

@@ -26,9 +26,6 @@ public class Room
     // Shared RNG exposed so entity states can use it
     public Random Random { get; } = new();
 
-    // Offset applied when this room is the incoming room during a shift
-    public Vector2 AdjacentOffset { get; set; } = Vector2.Zero;
-
     private readonly int _renderOffsetX = GameSettings.MapRenderOffsetX;
     private readonly int _renderOffsetY = GameSettings.MapRenderOffsetY;
 
