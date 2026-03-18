@@ -46,6 +46,8 @@ public class AnimatedSprite : Sprite
 
     public void Update(GameTime gameTime)
     {
+        if (_animation == null) return;
+
         _elapsed += gameTime.ElapsedGameTime;
 
         if (_elapsed >= _animation.Delay)

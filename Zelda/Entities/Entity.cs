@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using GMDCore.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Zelda.States.EntityStates;
 
 namespace Zelda.Entities;
 
@@ -38,6 +39,16 @@ public abstract class Entity : IEntity
     public bool IsSolid => false;
 
     public bool Active { get; set; } = true;
+
+    // State machine
+    public EntityStateBase State { get; private set; }
+
+    public void ChangeState(EntityStateBase newState)
+    {
+        State?.Exit();
+        State = newState;
+        State.Enter();
+    }
 
     // Invulnerability / hit-flash state
     public bool IsInvulnerable { get; private set; }
@@ -93,6 +104,7 @@ public abstract class Entity : IEntity
         }
 
         Sprite?.Update(gameTime);
+        State?.Update(gameTime);
     }
 
     // Non-virtual: called by states to draw the sprite without triggering the
@@ -107,5 +119,5 @@ public abstract class Entity : IEntity
         Sprite?.Region?.Draw(spriteBatch, drawPos, drawColor);
     }
 
-    public virtual void Draw(SpriteBatch spriteBatch) => DrawSprite(spriteBatch);
+    public virtual void Draw(SpriteBatch spriteBatch) => State?.Draw(spriteBatch);
 }

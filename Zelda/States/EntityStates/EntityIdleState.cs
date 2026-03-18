@@ -31,10 +31,7 @@ public class EntityIdleState : EntityStateBase
         {
             _waitTimer += dt;
             if (_waitTimer > _waitDuration)
-            {
-                if (Entity is Enemy enemy)
-                    enemy.ChangeState(new EntityWalkState(enemy));
-            }
+                Entity.ChangeState(new EntityWalkState(Entity));
         }
     }
 }

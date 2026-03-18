@@ -13,14 +13,11 @@ public class EntityWalkState : EntityStateBase
     private static readonly Direction[] Directions =
         [Direction.Left, Direction.Right, Direction.Up, Direction.Down];
 
-    public EntityWalkState(Entity entity) : base(entity)
-    {
-        Entity.ChangeAnimation("walk-down");
-    }
+    public EntityWalkState(Entity entity) : base(entity) { }
 
     public override void Enter()
     {
-        Entity.ChangeAnimation("walk-down");
+        Entity.ChangeAnimation($"walk-{Entity.Direction.ToName()}");
     }
 
     public override void Update(GameTime gameTime)
@@ -73,8 +70,6 @@ public class EntityWalkState : EntityStateBase
                 }
                 break;
         }
-
-        // Update animation: base.Update advances the sprite (called via Entity.Update in entity loop)
     }
 
     public override void ProcessAI(Room room, GameTime gameTime)
@@ -92,10 +87,7 @@ public class EntityWalkState : EntityStateBase
             _movementTimer = 0f;
 
             if (room.Random.Next(3) == 0)
-            {
-                if (Entity is Enemy enemy)
-                    enemy.ChangeState(new EntityIdleState(enemy));
-            }
+                Entity.ChangeState(new EntityIdleState(Entity));
             else
             {
                 _moveDuration = room.Random.Next(1, 6);

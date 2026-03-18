@@ -88,11 +88,10 @@ public class Room
         int ts   = GameSettings.TileSize;
         int offX = GameSettings.MapRenderOffsetX;
         int offY = GameSettings.MapRenderOffsetY;
-        int vw   = GameSettings.VirtualWidth;
         int mapH = GameSettings.MapHeight;
 
         int minX = offX + ts;
-        int maxX = vw - ts * 2 - 16;
+        int maxX = GameSettings.VirtualWidth - ts * 2 - 16;
         int minY = offY + ts;
         int maxY = offY + mapH * ts - ts - 16;
 
@@ -122,11 +121,10 @@ public class Room
         int ts   = GameSettings.TileSize;
         int offX = GameSettings.MapRenderOffsetX;
         int offY = GameSettings.MapRenderOffsetY;
-        int vw   = GameSettings.VirtualWidth;
         int mapH = GameSettings.MapHeight;
 
         int minX = offX + ts;
-        int maxX = vw - ts * 2 - 16;
+        int maxX = GameSettings.VirtualWidth - ts * 2 - 16;
         int minY = offY + ts;
         int maxY = offY + mapH * ts - ts - 16;
 
@@ -164,9 +162,6 @@ public class Room
 
     public void Update(GameTime gameTime)
     {
-        // Skip updates if we're being slid off-screen during a room transition
-        if (AdjacentOffset != Vector2.Zero) return;
-
         _player.Update(gameTime);
 
         for (int i = Enemies.Count - 1; i >= 0; i--)

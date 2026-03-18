@@ -1,7 +1,5 @@
-using GMDCore;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using Zelda.Input;
 
 namespace Zelda.States.GameStates;
@@ -31,7 +29,7 @@ public class StartState(Game1 game) : GameStateBase(game)
 
     public override void Update(GameTime gameTime)
     {
-        if (GameController.Start)
+        if (GameController.Confirm)
         {
             Game.SetState(new PlayState(Game));
         }

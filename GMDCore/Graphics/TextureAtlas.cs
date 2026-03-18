@@ -108,33 +108,22 @@ public class TextureAtlas
         //
         // So we retrieve all of the <Animation> elements then loop through each one
         // and generate a new Animation instance from it and add it to this atlas.
-        var animationElements = root.Element("Animations").Elements("Animation");
+        var animationElements = root.Element("Animations")?.Elements("Animation") ?? [];
 
-        if (animationElements != null)
+        foreach (var animationElement in animationElements)
         {
-            foreach (var animationElement in animationElements)
+            string name = animationElement.Attribute("name")?.Value;
+            float delayInMilliseconds = float.Parse(animationElement.Attribute("delay")?.Value ?? "0");
+            TimeSpan delay = TimeSpan.FromMilliseconds(delayInMilliseconds);
+
+            List<TextureRegion> frames = [];
+            foreach (var frameElement in animationElement.Elements("Frame"))
             {
-                string name = animationElement.Attribute("name")?.Value;
-                float delayInMilliseconds = float.Parse(animationElement.Attribute("delay")?.Value ?? "0");
-                TimeSpan delay = TimeSpan.FromMilliseconds(delayInMilliseconds);
-
-                List<TextureRegion> frames = [];
-
-                var frameElements = animationElement.Elements("Frame");
-
-                if (frameElements != null)
-                {
-                    foreach (var frameElement in frameElements)
-                    {
-                        string regionName = frameElement.Attribute("region").Value;
-                        TextureRegion region = atlas.GetRegion(regionName);
-                        frames.Add(region);
-                    }
-                }
-
-                Animation animation = new(frames, delay);
-                atlas.AddAnimation(name, animation);
+                string regionName = frameElement.Attribute("region").Value;
+                frames.Add(atlas.GetRegion(regionName));
             }
+
+            atlas.AddAnimation(name, new Animation(frames, delay));
         }
 
         return atlas;
@@ -192,7 +181,7 @@ public class TextureAtlas
     // Creates an Animation from 1-based frame indices within a grid atlas.
     public Animation CreateAnimation(int[] frameIndices, double intervalSeconds, bool loop = true)
     {
-        var frames = new System.Collections.Generic.List<TextureRegion>(frameIndices.Length);
+        var frames = new List<TextureRegion>(frameIndices.Length);
         foreach (int i in frameIndices)
             frames.Add(GetRegion($"frame_{i}"));
 
