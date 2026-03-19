@@ -28,20 +28,14 @@ public class PlayState(Game1 game) : GameStateBase(game)
         _pixel = new Texture2D(Game.GraphicsDevice, 1, 1);
         _pixel.SetData([Color.White]);
 
-        var tilesTex    = Game.Content.Load<Texture2D>("images/tilesheet");
-        var walkTex     = Game.Content.Load<Texture2D>("images/character_walk");
-        var swordTex    = Game.Content.Load<Texture2D>("images/character_swing_sword");
-        var entityTex   = Game.Content.Load<Texture2D>("images/entities");
-        var heartsTex   = Game.Content.Load<Texture2D>("images/hearts");
-        var switchesTex = Game.Content.Load<Texture2D>("images/switches");
+        var tilesheet = Game.Content.Load<Texture2D>("images/tilesheet");
+        _tileset     = new Tileset(new TextureRegion(tilesheet, 0, 0, tilesheet.Width, tilesheet.Height), 16, 16);
+        _entityAtlas = TextureAtlas.FromGrid(Game.Content.Load<Texture2D>("images/entities"),           16, 16);
+        _heartsAtlas = TextureAtlas.FromGrid(Game.Content.Load<Texture2D>("images/hearts"),             16, 16);
+        _switchAtlas = TextureAtlas.FromGrid(Game.Content.Load<Texture2D>("images/switches"),           16, 18);
 
-        _tileset     = new Tileset(new TextureRegion(tilesTex, 0, 0, tilesTex.Width, tilesTex.Height), 16, 16);
-        _entityAtlas = TextureAtlas.FromGrid(entityTex,   16, 16);
-        _heartsAtlas = TextureAtlas.FromGrid(heartsTex,   16, 16);
-        _switchAtlas = TextureAtlas.FromGrid(switchesTex, 16, 18);
-
-        var walkAtlas  = TextureAtlas.FromGrid(walkTex,  16, 32);
-        var swordAtlas = TextureAtlas.FromGrid(swordTex, 32, 32);
+        var walkAtlas  = TextureAtlas.FromGrid(Game.Content.Load<Texture2D>("images/character_walk"),        16, 32);
+        var swordAtlas = TextureAtlas.FromGrid(Game.Content.Load<Texture2D>("images/character_swing_sword"), 32, 32);
 
         _player = new Player
         {
