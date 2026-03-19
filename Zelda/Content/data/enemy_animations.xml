@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
-  Enemy animation definitions. All enemies share entities.png (16x16 per frame, 12 cols).
-  frames:   0-based frame indices, comma-separated
-  interval: seconds per frame
+  Enemy animation definitions.
+  atlas:       content path of the shared sprite sheet
+  frameWidth/frameHeight: pixel size of each frame in the sheet
+  frames:      0-based frame indices, comma-separated
+  interval:    seconds per frame
 -->
-<EnemyAnimations>
+<EnemyAnimations atlas="images/entities" frameWidth="16" frameHeight="16">
 
   <Enemy type="skeleton" width="16" height="16" walkSpeed="20" health="1">
     <Animation name="walk-down"  frames="9,10,11,10"   interval="0.2" />

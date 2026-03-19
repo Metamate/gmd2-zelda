@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
-  Player animation definitions.
-  atlas:    "walk" (character_walk.png 16x32) or "sword" (character_swing_sword.png 32x32)
+  Player animation definitions, grouped by sprite sheet.
+  frameWidth/frameHeight: pixel size of each frame in the sheet
   frames:   0-based frame indices, comma-separated
   interval: seconds per frame
   loop:     true (default) or false
 -->
 <PlayerAnimations>
 
-  <!-- Walk -->
-  <Animation name="walk-down"  atlas="walk" frames="0,1,2,3"     interval="0.15"  />
-  <Animation name="walk-right" atlas="walk" frames="4,5,6,7"     interval="0.15"  />
-  <Animation name="walk-up"    atlas="walk" frames="8,9,10,11"   interval="0.15"  />
-  <Animation name="walk-left"  atlas="walk" frames="12,13,14,15" interval="0.155" />
+  <Atlas image="images/character_walk" frameWidth="16" frameHeight="32">
+    <Animation name="walk-down"  frames="0,1,2,3"     interval="0.15"  />
+    <Animation name="walk-right" frames="4,5,6,7"     interval="0.15"  />
+    <Animation name="walk-up"    frames="8,9,10,11"   interval="0.15"  />
+    <Animation name="walk-left"  frames="12,13,14,15" interval="0.155" />
+    <Animation name="idle-down"  frames="0"           interval="0.15"  />
+    <Animation name="idle-right" frames="4"           interval="0.15"  />
+    <Animation name="idle-up"    frames="8"           interval="0.15"  />
+    <Animation name="idle-left"  frames="12"          interval="0.15"  />
+  </Atlas>
 
-  <!-- Idle (single frame) -->
-  <Animation name="idle-down"  atlas="walk" frames="0"  interval="0.15" />
-  <Animation name="idle-right" atlas="walk" frames="4"  interval="0.15" />
-  <Animation name="idle-up"    atlas="walk" frames="8"  interval="0.15" />
-  <Animation name="idle-left"  atlas="walk" frames="12" interval="0.15" />
-
-  <!-- Sword swing (non-looping) -->
-  <Animation name="sword-down"  atlas="sword" frames="0,1,2,3"     interval="0.05" loop="false" />
-  <Animation name="sword-up"    atlas="sword" frames="4,5,6,7"     interval="0.05" loop="false" />
-  <Animation name="sword-right" atlas="sword" frames="8,9,10,11"   interval="0.05" loop="false" />
-  <Animation name="sword-left"  atlas="sword" frames="12,13,14,15" interval="0.05" loop="false" />
+  <Atlas image="images/character_swing_sword" frameWidth="32" frameHeight="32">
+    <Animation name="sword-down"  frames="0,1,2,3"     interval="0.05" loop="false" />
+    <Animation name="sword-up"    frames="4,5,6,7"     interval="0.05" loop="false" />
+    <Animation name="sword-right" frames="8,9,10,11"   interval="0.05" loop="false" />
+    <Animation name="sword-left"  frames="12,13,14,15" interval="0.05" loop="false" />
+  </Atlas>
 
 </PlayerAnimations>

@@ -1,5 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Interactive object definitions.
+  atlas:       content path of the sprite sheet
+  frameWidth/frameHeight: pixel size of each frame in the sheet
+-->
 <Objects>
-  <Object type="switch" width="16" height="16" defaultState="unpressed">
+  <Object type="switch" atlas="images/switches" frameWidth="16" frameHeight="18"
+          width="16" height="16" defaultState="unpressed">
     <State name="unpressed" frame="1" />
     <State name="pressed"   frame="0" />
   </Object>

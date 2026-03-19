@@ -15,8 +15,6 @@ public class PlayState(Game1 game) : GameStateBase(game)
     private Dungeon _dungeon;
 
     private Tileset _tileset;
-    private TextureAtlas _entityAtlas;
-    private TextureAtlas _switchAtlas;
     private TextureAtlas _heartsAtlas;
 
     // 1×1 white pixel used as a solid fill when writing the stencil arch mask.
@@ -30,12 +28,7 @@ public class PlayState(Game1 game) : GameStateBase(game)
 
         var tilesheet = Game.Content.Load<Texture2D>("images/tilesheet");
         _tileset     = new Tileset(new TextureRegion(tilesheet, 0, 0, tilesheet.Width, tilesheet.Height), 16, 16);
-        _entityAtlas = TextureAtlas.FromGrid(Game.Content.Load<Texture2D>("images/entities"),           16, 16);
-        _heartsAtlas = TextureAtlas.FromGrid(Game.Content.Load<Texture2D>("images/hearts"),             16, 16);
-        _switchAtlas = TextureAtlas.FromGrid(Game.Content.Load<Texture2D>("images/switches"),           16, 18);
-
-        var walkAtlas  = TextureAtlas.FromGrid(Game.Content.Load<Texture2D>("images/character_walk"),        16, 32);
-        var swordAtlas = TextureAtlas.FromGrid(Game.Content.Load<Texture2D>("images/character_swing_sword"), 32, 32);
+        _heartsAtlas = TextureAtlas.FromGrid(Game.Content.Load<Texture2D>("images/hearts"), 16, 16);
 
         _player = new Player
         {
@@ -48,11 +41,10 @@ public class PlayState(Game1 game) : GameStateBase(game)
             Health    = GameSettings.PlayerStartHealth
         };
 
-        foreach (var (key, anim) in EntityDefinitions.CreatePlayerAnimations(walkAtlas, swordAtlas))
+        foreach (var (key, anim) in EntityDefinitions.CreatePlayerAnimations())
             _player.Animations.Add(key, anim);
 
-        _dungeon = new Dungeon(_player, () => new Room(
-            _player, _tileset, _entityAtlas, _switchAtlas));
+        _dungeon = new Dungeon(_player, () => new Room(_player, _tileset));
 
         _dungeon.OnPlayerDied += OnPlayerDied;
 

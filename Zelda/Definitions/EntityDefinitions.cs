@@ -5,16 +5,18 @@ using System.Xml.Linq;
 using GMDCore.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Zelda.Definitions;
 
 public static class EntityDefinitions
 {
-    private record AnimDef(string Name, string Atlas, int[] Frames, double Interval, bool Loop);
+    private record AnimDef(string Name, int[] Frames, double Interval, bool Loop);
 
     public record EnemyStats(int Width, int Height, int WalkSpeed, int Health);
 
-    private static List<AnimDef> _playerDefs;
+    private static TextureAtlas _enemyAtlas;
+    private static Dictionary<string, Animation> _playerAnimations;
     private static Dictionary<string, List<AnimDef>> _enemyDefs;
     private static Dictionary<string, EnemyStats> _enemyStats;
 
@@ -22,12 +24,44 @@ public static class EntityDefinitions
 
     public static void LoadContent(ContentManager content)
     {
-        _playerDefs = LoadXml(content, "data/player_animations.xml")
-            .Root.Elements("Animation")
-            .Select(ParseAnimDef)
-            .ToList();
+        LoadPlayerAnimations(content);
+        LoadEnemyAnimations(content);
+    }
 
-        var enemyElements = LoadXml(content, "data/enemy_animations.xml").Root.Elements("Enemy");
+    private static void LoadPlayerAnimations(ContentManager content)
+    {
+        var root = LoadXml(content, "data/player_animations.xml").Root;
+
+        _playerAnimations = new Dictionary<string, Animation>();
+
+        // Each <Atlas> group declares its image and frame size; animations inside
+        // are built from that atlas so callers need no knowledge of which image
+        // each animation comes from.
+        foreach (var atlasEl in root.Elements("Atlas"))
+        {
+            string image = atlasEl.Attribute("image").Value;
+            int frameWidth  = int.Parse(atlasEl.Attribute("frameWidth").Value);
+            int frameHeight = int.Parse(atlasEl.Attribute("frameHeight").Value);
+            var atlas = TextureAtlas.FromGrid(content.Load<Texture2D>(image), frameWidth, frameHeight);
+
+            foreach (var animEl in atlasEl.Elements("Animation"))
+            {
+                var def = ParseAnimDef(animEl);
+                _playerAnimations[def.Name] = atlas.CreateAnimation(def.Frames, def.Interval, def.Loop);
+            }
+        }
+    }
+
+    private static void LoadEnemyAnimations(ContentManager content)
+    {
+        var root = LoadXml(content, "data/enemy_animations.xml").Root;
+
+        string image = root.Attribute("atlas").Value;
+        int frameWidth  = int.Parse(root.Attribute("frameWidth").Value);
+        int frameHeight = int.Parse(root.Attribute("frameHeight").Value);
+        _enemyAtlas = TextureAtlas.FromGrid(content.Load<Texture2D>(image), frameWidth, frameHeight);
+
+        var enemyElements = root.Elements("Enemy").ToList();
 
         _enemyDefs = enemyElements.ToDictionary(
             e => e.Attribute("type").Value,
@@ -53,35 +87,18 @@ public static class EntityDefinitions
 
     private static AnimDef ParseAnimDef(XElement e) => new(
         Name:     e.Attribute("name").Value,
-        Atlas:    e.Attribute("atlas")?.Value ?? "",
         Frames:   e.Attribute("frames").Value.Split(',').Select(int.Parse).ToArray(),
         Interval: double.Parse(e.Attribute("interval").Value),
         Loop:     e.Attribute("loop")?.Value != "false"
     );
 
-    public static Dictionary<string, Animation> CreatePlayerAnimations(
-        TextureAtlas walkAtlas, TextureAtlas swordAtlas)
-    {
-        var atlases = new Dictionary<string, TextureAtlas>
-        {
-            ["walk"]  = walkAtlas,
-            ["sword"] = swordAtlas
-        };
+    public static Dictionary<string, Animation> CreatePlayerAnimations() => _playerAnimations;
 
-        return _playerDefs.ToDictionary(
+    public static Dictionary<string, Animation> CreateEnemyAnimations(string type) =>
+        _enemyDefs[type].ToDictionary(
             d => d.Name,
-            d => atlases[d.Atlas].CreateAnimation(d.Frames, d.Interval, d.Loop)
+            d => _enemyAtlas.CreateAnimation(d.Frames, d.Interval, d.Loop)
         );
-    }
-
-    public static Dictionary<string, Animation> CreateEnemyAnimations(
-        string type, TextureAtlas entityAtlas)
-    {
-        return _enemyDefs[type].ToDictionary(
-            d => d.Name,
-            d => entityAtlas.CreateAnimation(d.Frames, d.Interval, d.Loop)
-        );
-    }
 
     public static EnemyStats GetEnemyStats(string type) => _enemyStats[type];
 }

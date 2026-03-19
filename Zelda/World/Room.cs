@@ -14,9 +14,6 @@ namespace Zelda.World;
 public class Room
 {
     private readonly Tilemap _tilemap;
-    private readonly TextureAtlas _entityAtlas;
-    private readonly TextureAtlas _switchAtlas;
-
     private readonly Player _player;
 
     public List<Enemy> Enemies { get; } = new();
@@ -29,17 +26,9 @@ public class Room
     private readonly int _renderOffsetX = GameSettings.MapRenderOffsetX;
     private readonly int _renderOffsetY = GameSettings.MapRenderOffsetY;
 
-
-    public Room(
-        Player player,
-        Tileset tileset,
-        TextureAtlas entityAtlas,
-        TextureAtlas switchAtlas)
+    public Room(Player player, Tileset tileset)
     {
-        _player      = player;
-        _entityAtlas = entityAtlas;
-        _switchAtlas = switchAtlas;
-
+        _player  = player;
         _tilemap = new Tilemap(tileset, GameSettings.MapWidth, GameSettings.MapHeight);
         GenerateWallsAndFloors();
         GenerateEntities();
@@ -108,7 +97,7 @@ public class Room
                 Health    = stats.Health
             };
 
-            foreach (var (key, anim) in EntityDefinitions.CreateEnemyAnimations(type, _entityAtlas))
+            foreach (var (key, anim) in EntityDefinitions.CreateEnemyAnimations(type))
                 enemy.Animations.Add(key, anim);
 
             enemy.ChangeState(new EntityWalkState(enemy));
@@ -123,7 +112,7 @@ public class Room
         var stats = GameObjectDefinitions.GetStats("switch");
         var switchObj = new GameObject(
             type: "switch",
-            atlas: _switchAtlas,
+            atlas: stats.Atlas,
             stateFrames: stats.StateFrames,
             defaultState: stats.DefaultState,
             width: stats.Width,
@@ -131,6 +120,8 @@ public class Room
         );
         switchObj.Position = new Vector2(Random.Next(minX, maxX + 1), Random.Next(minY, maxY + 1));
 
+        // Behaviour is wired here rather than inside GameObject because objects are
+        // data-driven (defined in XML). A subclass per object type would defeat that purpose.
         switchObj.OnCollide = () =>
         {
             if (switchObj.State == "unpressed")
