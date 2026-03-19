@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Enemy animation definitions. All enemies share entities.png (16x16 per frame, 12 cols).
+  frames:   0-based frame indices, comma-separated
+  interval: seconds per frame
+-->
+<EnemyAnimations>
+
+  <Enemy type="skeleton">
+    <Animation name="walk-down"  frames="9,10,11,10"   interval="0.2" />
+    <Animation name="walk-left"  frames="21,22,23,22"  interval="0.2" />
+    <Animation name="walk-right" frames="33,34,35,34"  interval="0.2" />
+    <Animation name="walk-up"    frames="45,46,47,46"  interval="0.2" />
+    <Animation name="idle-down"  frames="10"           interval="0.2" />
+    <Animation name="idle-left"  frames="22"           interval="0.2" />
+    <Animation name="idle-right" frames="34"           interval="0.2" />
+    <Animation name="idle-up"    frames="46"           interval="0.2" />
+  </Enemy>
+
+  <Enemy type="slime">
+    <Animation name="walk-down"  frames="48,49,50,49"  interval="0.2" />
+    <Animation name="walk-left"  frames="60,61,62,61"  interval="0.2" />
+    <Animation name="walk-right" frames="72,73,74,73"  interval="0.2" />
+    <Animation name="walk-up"    frames="85,85,86,85"  interval="0.2" />
+    <Animation name="idle-down"  frames="49"           interval="0.2" />
+    <Animation name="idle-left"  frames="61"           interval="0.2" />
+    <Animation name="idle-right" frames="73"           interval="0.2" />
+    <Animation name="idle-up"    frames="85"           interval="0.2" />
+  </Enemy>
+
+  <Enemy type="bat">
+    <Animation name="walk-down"  frames="51,52,53,52"  interval="0.2" />
+    <Animation name="walk-left"  frames="63,64,65,64"  interval="0.2" />
+    <Animation name="walk-right" frames="75,76,77,76"  interval="0.2" />
+    <Animation name="walk-up"    frames="87,88,89,88"  interval="0.2" />
+    <Animation name="idle-down"  frames="51,52,53,52"  interval="0.2" />
+    <Animation name="idle-left"  frames="63,64,65,64"  interval="0.2" />
+    <Animation name="idle-right" frames="75,76,77,76"  interval="0.2" />
+    <Animation name="idle-up"    frames="87,88,89,88"  interval="0.2" />
+  </Enemy>
+
+  <Enemy type="ghost">
+    <Animation name="walk-down"  frames="54,55,56,55"  interval="0.2" />
+    <Animation name="walk-left"  frames="66,67,68,67"  interval="0.2" />
+    <Animation name="walk-right" frames="78,79,80,79"  interval="0.2" />
+    <Animation name="walk-up"    frames="90,91,92,91"  interval="0.2" />
+    <Animation name="idle-down"  frames="55"           interval="0.2" />
+    <Animation name="idle-left"  frames="67"           interval="0.2" />
+    <Animation name="idle-right" frames="79"           interval="0.2" />
+    <Animation name="idle-up"    frames="91"           interval="0.2" />
+  </Enemy>
+
+  <Enemy type="spider">
+    <Animation name="walk-down"  frames="57,58,59,58"  interval="0.2" />
+    <Animation name="walk-left"  frames="69,70,71,70"  interval="0.2" />
+    <Animation name="walk-right" frames="81,82,83,82"  interval="0.2" />
+    <Animation name="walk-up"    frames="93,94,95,94"  interval="0.2" />
+    <Animation name="idle-down"  frames="58"           interval="0.2" />
+    <Animation name="idle-left"  frames="70"           interval="0.2" />
+    <Animation name="idle-right" frames="82"           interval="0.2" />
+    <Animation name="idle-up"    frames="94"           interval="0.2" />
+  </Enemy>
+
+</EnemyAnimations>

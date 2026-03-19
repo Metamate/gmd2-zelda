@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Zelda.Audio;
+using Zelda.Definitions;
 using Zelda.States.GameStates;
 using Zelda.World;
 
@@ -32,6 +33,7 @@ public class Game1 : Core
         DefaultFont = Content.Load<SpriteFont>("fonts/font");
         SoundManager.LoadContent(Content);
         Doorway.LoadContent(Content);
+        EntityDefinitions.LoadContent(Content);
     }
 
     public void SetState(GameStateBase newState)

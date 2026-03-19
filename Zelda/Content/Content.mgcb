@@ -16,6 +16,12 @@
 #begin data/door_layouts.xml
 /copy:data/door_layouts.xml
 
+#begin data/player_animations.xml
+/copy:data/player_animations.xml
+
+#begin data/enemy_animations.xml
+/copy:data/enemy_animations.xml
+
 #begin fonts/font.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
