@@ -25,7 +25,7 @@ public class EntityIdleState : EntityStateBase
 
         if (_waitDuration == 0f)
         {
-            _waitDuration = room.Random.Next(1, 6); // 1–5 seconds
+            _waitDuration = room.Random.Next(GameSettings.EntityMoveDurationMin, GameSettings.EntityMoveDurationMax);
         }
         else
         {

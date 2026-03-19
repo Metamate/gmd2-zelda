@@ -4,6 +4,9 @@ namespace Zelda;
 
 public static class GameSettings
 {
+    public const int WindowWidth   = 1280;
+    public const int WindowHeight  = 720;
+
     public const int VirtualWidth  = 384;
     public const int VirtualHeight = 216;
 
@@ -24,6 +27,9 @@ public static class GameSettings
     public const float PlayerSpriteOffsetY = 5f;    // sprite extends above collision box (perspective)
     public const float PlayerSwordOffsetX  = 8f;    // sword sprite (32px) centred over collision box (16px)
 
+    // Door arch stencil mask — extra pixels the mask extends beyond the arch opening
+    public const int DoorArchPadding = 6;
+
     // Sword reach — how far the hitbox extends in front of the player
     public const int SwordReach         = TileSize / 2;
     public const int SwordHitboxYOffset = 2;    // vertical nudge to centre hitbox on player
@@ -36,12 +42,19 @@ public static class GameSettings
     // Room generation
     public const int RoomEnemyCount = 10;
 
+    // Entity AI — movement timing and idle probability
+    public const int EntityMoveDurationMin = 1;     // seconds (inclusive)
+    public const int EntityMoveDurationMax = 6;     // seconds (exclusive upper bound for Next())
+    public const int EntityIdleChance      = 3;     // 1-in-N chance to go idle after a move
+
     // HUD — hearts
     public const int HeartCount          = 3;
     public const int HeartHealthPerHeart = 2;
     public const int HeartFrameFull      = 4;
     public const int HeartFrameHalf      = 2;
     public const int HeartFrameEmpty     = 0;
+    public const int HeartHudGap         = 1;   // px between heart icons
+    public const int HeartHudOffsetY     = 2;   // px from top of screen
 
     // UI text layout
     public const float  UiTitleYOffset    = -10f;

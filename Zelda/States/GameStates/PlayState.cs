@@ -27,8 +27,8 @@ public class PlayState(Game1 game) : GameStateBase(game)
         _pixel.SetData([Color.White]);
 
         var tilesheet = Game.Content.Load<Texture2D>("images/tilesheet");
-        _tileset     = new Tileset(new TextureRegion(tilesheet, 0, 0, tilesheet.Width, tilesheet.Height), 16, 16);
-        _heartsAtlas = TextureAtlas.FromGrid(Game.Content.Load<Texture2D>("images/hearts"), 16, 16);
+        _tileset     = new Tileset(new TextureRegion(tilesheet, 0, 0, tilesheet.Width, tilesheet.Height), GameSettings.TileSize, GameSettings.TileSize);
+        _heartsAtlas = TextureAtlas.FromGrid(Game.Content.Load<Texture2D>("images/hearts"), GameSettings.TileSize, GameSettings.TileSize);
 
         _player = new Player
         {
@@ -93,7 +93,7 @@ public class PlayState(Game1 game) : GameStateBase(game)
                       : GameSettings.HeartFrameEmpty;
 
             _heartsAtlas.GetRegion($"frame_{frame}")
-                .Draw(spriteBatch, new Vector2(i * (ts + 1), 2), Color.White);
+                .Draw(spriteBatch, new Vector2(i * (ts + GameSettings.HeartHudGap), GameSettings.HeartHudOffsetY), Color.White);
 
             healthLeft -= GameSettings.HeartHealthPerHeart;
         }

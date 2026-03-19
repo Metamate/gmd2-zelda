@@ -246,9 +246,10 @@ public class Dungeon
         int doorY = (int)(offY + mapH / 2f * ts - ts);
         int doorX = (int)(offX + mapW / 2f * ts - ts);
 
-        spriteBatch.Draw(pixel, new Rectangle(-ts - 6,          doorY,       ts * 2 + 6, ts * 2),      Color.White); // Left
-        spriteBatch.Draw(pixel, new Rectangle(offX + mapW * ts, doorY,       ts * 2 + 6, ts * 2),      Color.White); // Right
-        spriteBatch.Draw(pixel, new Rectangle(doorX,            -ts - 6,     ts * 2,     ts * 2 + 12), Color.White); // Top
-        spriteBatch.Draw(pixel, new Rectangle(doorX,            vh - ts - 6, ts * 2,     ts * 2 + 12), Color.White); // Bottom
+        int ap = GameSettings.DoorArchPadding;
+        spriteBatch.Draw(pixel, new Rectangle(-ts - ap,          doorY,       ts * 2 + ap, ts * 2),          Color.White); // Left
+        spriteBatch.Draw(pixel, new Rectangle(offX + mapW * ts,  doorY,       ts * 2 + ap, ts * 2),          Color.White); // Right
+        spriteBatch.Draw(pixel, new Rectangle(doorX,             -ts - ap,    ts * 2,      ts * 2 + ap * 2), Color.White); // Top
+        spriteBatch.Draw(pixel, new Rectangle(doorX,             vh - ts - ap, ts * 2,     ts * 2 + ap * 2), Color.White); // Bottom
     }
 }

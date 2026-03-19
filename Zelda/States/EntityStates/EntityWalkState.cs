@@ -77,7 +77,7 @@ public class EntityWalkState : EntityStateBase
 
         if (_moveDuration == 0f || Bumped)
         {
-            _moveDuration = room.Random.Next(1, 6);
+            _moveDuration = room.Random.Next(GameSettings.EntityMoveDurationMin, GameSettings.EntityMoveDurationMax);
             Entity.Direction = Directions[room.Random.Next(Directions.Length)];
             Entity.ChangeAnimation($"walk-{Entity.Direction.ToName()}");
         }
@@ -85,11 +85,11 @@ public class EntityWalkState : EntityStateBase
         {
             _movementTimer = 0f;
 
-            if (room.Random.Next(3) == 0)
+            if (room.Random.Next(GameSettings.EntityIdleChance) == 0)
                 Entity.ChangeState(new EntityIdleState(Entity));
             else
             {
-                _moveDuration = room.Random.Next(1, 6);
+                _moveDuration = room.Random.Next(GameSettings.EntityMoveDurationMin, GameSettings.EntityMoveDurationMax);
                 Entity.Direction = Directions[room.Random.Next(Directions.Length)];
                 Entity.ChangeAnimation($"walk-{Entity.Direction.ToName()}");
             }

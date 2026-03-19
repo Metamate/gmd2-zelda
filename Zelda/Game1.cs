@@ -15,7 +15,7 @@ public class Game1 : Core
 
     public static SpriteFont DefaultFont { get; private set; }
 
-    public Game1() : base("Zelda", 1280, 720, GameSettings.VirtualWidth, GameSettings.VirtualHeight)
+    public Game1() : base("Zelda", GameSettings.WindowWidth, GameSettings.WindowHeight, GameSettings.VirtualWidth, GameSettings.VirtualHeight)
     {
         // Stencil buffer is required for the door-arch clipping effect.
         Graphics.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
