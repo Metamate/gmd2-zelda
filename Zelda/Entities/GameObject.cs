@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using GMDCore.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -15,7 +16,7 @@ public class GameObject : IEntity
     public string State { get; set; }
 
     // Maps state name to the frame index in the object's atlas
-    private readonly System.Collections.Generic.Dictionary<string, int> _stateFrames;
+    private readonly Dictionary<string, int> _stateFrames;
 
     private readonly TextureAtlas _atlas;
 
@@ -35,7 +36,7 @@ public class GameObject : IEntity
     public GameObject(
         string type,
         TextureAtlas atlas,
-        System.Collections.Generic.Dictionary<string, int> stateFrames,
+        Dictionary<string, int> stateFrames,
         string defaultState,
         int width,
         int height)

@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using GMDCore.Graphics;
-using Zelda.Definitions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Zelda.Audio;
-
+using Zelda.Definitions;
 using Zelda.Entities;
 using Zelda.States.EntityStates;
 
@@ -29,7 +29,6 @@ public class Room
     private readonly int _renderOffsetX = GameSettings.MapRenderOffsetX;
     private readonly int _renderOffsetY = GameSettings.MapRenderOffsetY;
 
-    private static readonly string[] EnemyTypes = ["skeleton", "slime", "bat", "ghost", "spider"];
 
     public Room(
         Player player,
@@ -75,29 +74,38 @@ public class Room
         }
     }
 
-    private void GenerateEntities()
+    private (int MinX, int MaxX, int MinY, int MaxY) GetSpawnBounds()
     {
         int ts   = GameSettings.TileSize;
         int offX = GameSettings.MapRenderOffsetX;
         int offY = GameSettings.MapRenderOffsetY;
         int mapH = GameSettings.MapHeight;
 
-        int minX = offX + ts;
-        int maxX = GameSettings.VirtualWidth - ts * 2 - 16;
-        int minY = offY + ts;
-        int maxY = offY + mapH * ts - ts - 16;
+        return (
+            MinX: offX + ts,
+            MaxX: GameSettings.VirtualWidth - ts * 2 - ts,
+            MinY: offY + ts,
+            MaxY: offY + mapH * ts - ts - ts
+        );
+    }
 
-        for (int i = 0; i < 10; i++)
+    private void GenerateEntities()
+    {
+        var (minX, maxX, minY, maxY) = GetSpawnBounds();
+        var enemyTypes = EntityDefinitions.EnemyTypes.ToArray();
+
+        for (int i = 0; i < GameSettings.RoomEnemyCount; i++)
         {
-            string type = EnemyTypes[Random.Next(EnemyTypes.Length)];
+            string type  = enemyTypes[Random.Next(enemyTypes.Length)];
+            var    stats = EntityDefinitions.GetEnemyStats(type);
 
             var enemy = new Enemy
             {
                 Position  = new Vector2(Random.Next(minX, maxX + 1), Random.Next(minY, maxY + 1)),
-                Width     = 16,
-                Height    = 16,
-                WalkSpeed = 20,
-                Health    = 1
+                Width     = stats.Width,
+                Height    = stats.Height,
+                WalkSpeed = stats.WalkSpeed,
+                Health    = stats.Health
             };
 
             foreach (var (key, anim) in EntityDefinitions.CreateEnemyAnimations(type, _entityAtlas))
@@ -110,15 +118,7 @@ public class Room
 
     private void GenerateObjects()
     {
-        int ts   = GameSettings.TileSize;
-        int offX = GameSettings.MapRenderOffsetX;
-        int offY = GameSettings.MapRenderOffsetY;
-        int mapH = GameSettings.MapHeight;
-
-        int minX = offX + ts;
-        int maxX = GameSettings.VirtualWidth - ts * 2 - 16;
-        int minY = offY + ts;
-        int maxY = offY + mapH * ts - ts - 16;
+        var (minX, maxX, minY, maxY) = GetSpawnBounds();
 
         var switchObj = new GameObject(
             type: "switch",
@@ -175,7 +175,7 @@ public class Room
             {
                 SoundManager.PlaySound("hit-player");
                 _player.Damage(1);
-                _player.GoInvulnerable(1.5f);
+                _player.GoInvulnerable(GameSettings.PlayerHitInvulDuration);
 
                 if (_player.Health <= 0)
                     OnPlayerDied?.Invoke();

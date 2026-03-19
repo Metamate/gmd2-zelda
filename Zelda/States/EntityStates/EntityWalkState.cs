@@ -25,11 +25,10 @@ public class EntityWalkState : EntityStateBase
         float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
         Bumped = false;
 
-        int tileSize  = GameSettings.TileSize;
-        int offsetX   = GameSettings.MapRenderOffsetX;
-        int offsetY   = GameSettings.MapRenderOffsetY;
-        int mapH      = GameSettings.MapHeight;
-        int vHeight   = GameSettings.VirtualHeight;
+        int tileSize = GameSettings.TileSize;
+        int offsetX  = GameSettings.MapRenderOffsetX;
+        int offsetY  = GameSettings.MapRenderOffsetY;
+        int mapH     = GameSettings.MapHeight;
 
         switch (Entity.Direction)
         {
@@ -62,7 +61,7 @@ public class EntityWalkState : EntityStateBase
 
             case Direction.Down:
                 Entity.Position = Entity.Position with { Y = Entity.Position.Y + Entity.WalkSpeed * dt };
-                float bottomEdge = vHeight - (vHeight - mapH * tileSize) + offsetY - tileSize;
+                float bottomEdge = offsetY + mapH * tileSize - tileSize;
                 if (Entity.Position.Y + Entity.Height >= bottomEdge)
                 {
                     Entity.Position = Entity.Position with { Y = bottomEdge - Entity.Height };

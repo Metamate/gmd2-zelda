@@ -93,9 +93,9 @@ public class PlayerWalkState : EntityWalkState
             {
                 // Align the player to the centre of the doorway on the perpendicular axis
                 if (horizontal)
-                    _player.Position = _player.Position with { Y = doorway.Position.Y + 4 };
+                    _player.Position = _player.Position with { Y = doorway.Position.Y + (doorway.Height - _player.Height) / 2f };
                 else
-                    _player.Position = _player.Position with { X = doorway.Position.X + 8 };
+                    _player.Position = _player.Position with { X = doorway.Position.X + (doorway.Width  - _player.Width)  / 2f };
 
                 _dungeon.BeginShift(_player.Direction);
             }

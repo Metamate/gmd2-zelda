@@ -25,11 +25,16 @@ public static class GameSettings
     public const float PlayerSwordOffsetX  = 8f;    // sword sprite (32px) centred over collision box (16px)
 
     // Sword reach — how far the hitbox extends in front of the player
-    public const int SwordReach = TileSize / 2;
+    public const int SwordReach         = TileSize / 2;
+    public const int SwordHitboxYOffset = 2;    // vertical nudge to centre hitbox on player
 
-    // Invulnerability flash
-    public const float InvulFlashInterval = 0.06f;
-    public const float InvulFlashAlpha    = 64f / 255f;
+    // Invulnerability
+    public const float PlayerHitInvulDuration = 1.5f;
+    public const float InvulFlashInterval     = 0.06f;
+    public const float InvulFlashAlpha        = 64f / 255f;
+
+    // Room generation
+    public const int RoomEnemyCount = 10;
 
     // HUD — hearts
     public const int HeartCount          = 3;

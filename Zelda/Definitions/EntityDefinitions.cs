@@ -12,8 +12,13 @@ public static class EntityDefinitions
 {
     private record AnimDef(string Name, string Atlas, int[] Frames, double Interval, bool Loop);
 
+    public record EnemyStats(int Width, int Height, int WalkSpeed, int Health);
+
     private static List<AnimDef> _playerDefs;
     private static Dictionary<string, List<AnimDef>> _enemyDefs;
+    private static Dictionary<string, EnemyStats> _enemyStats;
+
+    public static IReadOnlyCollection<string> EnemyTypes => _enemyDefs.Keys;
 
     public static void LoadContent(ContentManager content)
     {
@@ -22,12 +27,22 @@ public static class EntityDefinitions
             .Select(ParseAnimDef)
             .ToList();
 
-        _enemyDefs = LoadXml(content, "data/enemy_animations.xml")
-            .Root.Elements("Enemy")
-            .ToDictionary(
-                e => e.Attribute("type").Value,
-                e => e.Elements("Animation").Select(ParseAnimDef).ToList()
-            );
+        var enemyElements = LoadXml(content, "data/enemy_animations.xml").Root.Elements("Enemy");
+
+        _enemyDefs = enemyElements.ToDictionary(
+            e => e.Attribute("type").Value,
+            e => e.Elements("Animation").Select(ParseAnimDef).ToList()
+        );
+
+        _enemyStats = enemyElements.ToDictionary(
+            e => e.Attribute("type").Value,
+            e => new EnemyStats(
+                Width:     int.Parse(e.Attribute("width").Value),
+                Height:    int.Parse(e.Attribute("height").Value),
+                WalkSpeed: int.Parse(e.Attribute("walkSpeed").Value),
+                Health:    int.Parse(e.Attribute("health").Value)
+            )
+        );
     }
 
     private static XDocument LoadXml(ContentManager content, string path)
@@ -67,4 +82,6 @@ public static class EntityDefinitions
             d => entityAtlas.CreateAnimation(d.Frames, d.Interval, d.Loop)
         );
     }
+
+    public static EnemyStats GetEnemyStats(string type) => _enemyStats[type];
 }

@@ -31,13 +31,14 @@ public class PlayerSwingSwordState : EntityStateBase
         int reach = GameSettings.SwordReach;
         int ts    = GameSettings.TileSize;
 
+        int yOffset = GameSettings.SwordHitboxYOffset;
         _swordHitbox = _player.Direction switch
         {
-            Direction.Left  => new Rectangle(px - reach,          py + 2, reach, ts),
-            Direction.Right => new Rectangle(px + _player.Width,  py + 2, reach, ts),
-            Direction.Up    => new Rectangle(px,                   py - reach, ts, reach),
-            Direction.Down  => new Rectangle(px, py + _player.Height,          ts, reach),
-            _               => new Rectangle(px, py + _player.Height,          ts, reach)
+            Direction.Left  => new Rectangle(px - reach,         py + yOffset, reach, ts),
+            Direction.Right => new Rectangle(px + _player.Width, py + yOffset, reach, ts),
+            Direction.Up    => new Rectangle(px,                  py - reach,   ts,    reach),
+            Direction.Down  => new Rectangle(px, py + _player.Height,           ts,    reach),
+            _               => new Rectangle(px, py + _player.Height,           ts,    reach)
         };
 
         _player.ChangeAnimation($"sword-{_player.Direction.ToName()}");
