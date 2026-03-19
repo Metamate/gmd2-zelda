@@ -1,6 +1,11 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Xml.Linq;
 using GMDCore.Graphics;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Zelda.Entities;
 
@@ -25,26 +30,37 @@ public class Doorway : IEntity
     public bool IsSolid => false;
     public bool Active { get; set; } = true;
 
-    // Each door variant is 4 tiles; each entry is (1-based tile ID, x offset, y offset).
+    // Each door variant is 4 tiles; each entry is (tile ID, x offset, y offset).
     private readonly record struct TilePlacement(int Id, int Dx, int Dy);
 
-    private const int Ts = GameSettings.TileSize;
+    private static Dictionary<Direction, TilePlacement[]> _openLayouts;
+    private static Dictionary<Direction, TilePlacement[]> _closedLayouts;
 
-    private static readonly Dictionary<Direction, TilePlacement[]> OpenLayouts = new()
+    public static void LoadContent(ContentManager content)
     {
-        [Direction.Left]  = [new(181, -Ts,  0), new(182,  0,  0), new(200, -Ts, Ts), new(201,  0, Ts)],
-        [Direction.Right] = [new(172,   0,  0), new(173, Ts,  0), new(191,   0, Ts), new(192, Ts, Ts)],
-        [Direction.Up]    = [new( 98,   0, -Ts), new( 99, Ts, -Ts), new(117,  0,  0), new(118, Ts,  0)],
-        [Direction.Down]  = [new(141,   0,  0), new(142, Ts,  0), new(160,   0, Ts), new(161, Ts, Ts)],
-    };
+        string path = Path.Combine(content.RootDirectory, "data/door_layouts.xml");
+        using Stream stream = TitleContainer.OpenStream(path);
+        XDocument doc = XDocument.Load(stream);
 
-    private static readonly Dictionary<Direction, TilePlacement[]> ClosedLayouts = new()
+        _openLayouts   = ParseLayouts(doc, "open");
+        _closedLayouts = ParseLayouts(doc, "closed");
+    }
+
+    private static Dictionary<Direction, TilePlacement[]> ParseLayouts(XDocument doc, string state)
     {
-        [Direction.Left]  = [new(219, -Ts,  0), new(220,  0,  0), new(238, -Ts, Ts), new(239,  0, Ts)],
-        [Direction.Right] = [new(174,   0,  0), new(175, Ts,  0), new(193,   0, Ts), new(194, Ts, Ts)],
-        [Direction.Up]    = [new(134,   0, -Ts), new(135, Ts, -Ts), new(153,  0,  0), new(154, Ts,  0)],
-        [Direction.Down]  = [new(216,   0,  0), new(217, Ts,  0), new(235,   0, Ts), new(236, Ts, Ts)],
-    };
+        int ts = GameSettings.TileSize;
+        return doc.Root
+            .Elements("Layout")
+            .Where(e => e.Attribute("state")?.Value == state)
+            .ToDictionary(
+                e => Enum.Parse<Direction>(e.Attribute("direction").Value, ignoreCase: true),
+                e => e.Elements("Tile").Select(t => new TilePlacement(
+                    int.Parse(t.Attribute("id").Value),
+                    int.Parse(t.Attribute("dx").Value) * ts,
+                    int.Parse(t.Attribute("dy").Value) * ts
+                )).ToArray()
+            );
+    }
 
     public Doorway(Direction direction, bool open, Tileset tileset)
     {
@@ -91,14 +107,13 @@ public class Doorway : IEntity
     public void DrawAt(SpriteBatch spriteBatch, Vector2 adjacentOffset)
     {
         Vector2 p = Position + adjacentOffset;
-        foreach (var t in (IsOpen ? OpenLayouts : ClosedLayouts)[_direction])
+        foreach (var t in (IsOpen ? _openLayouts : _closedLayouts)[_direction])
             DrawTile(spriteBatch, t.Id, new Vector2(p.X + t.Dx, p.Y + t.Dy));
     }
 
     private void DrawTile(SpriteBatch spriteBatch, int tileId, Vector2 position)
     {
-        // tileId is 1-based (Löve2D layout); Tileset is 0-based
-        _tileset.GetTile(tileId - 1).Draw(spriteBatch, position, Color.White);
+        _tileset.GetTile(tileId).Draw(spriteBatch, position, Color.White);
     }
 
     public bool Collides(IEntity other) =>

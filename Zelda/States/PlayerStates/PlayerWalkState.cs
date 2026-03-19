@@ -20,7 +20,7 @@ public class PlayerWalkState : EntityWalkState
 
     public override void Enter()
     {
-        _player.SpriteOffset = new Vector2(0, 5);
+        _player.SpriteOffset = new Vector2(0, GameSettings.PlayerSpriteOffsetY);
     }
 
     public override void Update(GameTime gameTime)

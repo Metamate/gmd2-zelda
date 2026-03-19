@@ -22,19 +22,22 @@ public class PlayerSwingSwordState : EntityStateBase
 
     public override void Enter()
     {
-        _player.SpriteOffset = new Vector2(8, 5);
+        _player.SpriteOffset = new Vector2(GameSettings.PlayerSwordOffsetX, GameSettings.PlayerSpriteOffsetY);
 
-        // Build a sword hitbox in front of the player based on facing direction
-        int px = (int)_player.Position.X;
-        int py = (int)_player.Position.Y;
+        // Build a sword hitbox in front of the player based on facing direction.
+        // Reach = half a tile; the hitbox is one full tile wide on the perpendicular axis.
+        int px    = (int)_player.Position.X;
+        int py    = (int)_player.Position.Y;
+        int reach = GameSettings.SwordReach;
+        int ts    = GameSettings.TileSize;
 
         _swordHitbox = _player.Direction switch
         {
-            Direction.Left  => new Rectangle(px - 8,  py + 2, 8,  16),
-            Direction.Right => new Rectangle(px + _player.Width, py + 2, 8, 16),
-            Direction.Up    => new Rectangle(px, py - 8, 16, 8),
-            Direction.Down  => new Rectangle(px, py + _player.Height, 16, 8),
-            _               => new Rectangle(px, py + _player.Height, 16, 8)
+            Direction.Left  => new Rectangle(px - reach,          py + 2, reach, ts),
+            Direction.Right => new Rectangle(px + _player.Width,  py + 2, reach, ts),
+            Direction.Up    => new Rectangle(px,                   py - reach, ts, reach),
+            Direction.Down  => new Rectangle(px, py + _player.Height,          ts, reach),
+            _               => new Rectangle(px, py + _player.Height,          ts, reach)
         };
 
         _player.ChangeAnimation($"sword-{_player.Direction.ToName()}");

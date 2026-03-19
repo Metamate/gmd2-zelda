@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Door tile layouts. Each Layout entry defines the 4 tiles that compose a
+  doorway opening in the given direction, for the open or closed state.
+
+  Tile id: 0-based index into the tilesheet.
+  dx / dy: offset in tile units from the doorway's Position (e.g. -1 = -TileSize).
+-->
+<DoorLayouts>
+
+  <!-- Open doors -->
+  <Layout state="open" direction="left">
+    <Tile id="180" dx="-1" dy="0" />
+    <Tile id="181" dx="0"  dy="0" />
+    <Tile id="199" dx="-1" dy="1" />
+    <Tile id="200" dx="0"  dy="1" />
+  </Layout>
+  <Layout state="open" direction="right">
+    <Tile id="171" dx="0" dy="0" />
+    <Tile id="172" dx="1" dy="0" />
+    <Tile id="190" dx="0" dy="1" />
+    <Tile id="191" dx="1" dy="1" />
+  </Layout>
+  <Layout state="open" direction="up">
+    <Tile id="97"  dx="0" dy="-1" />
+    <Tile id="98"  dx="1" dy="-1" />
+    <Tile id="116" dx="0" dy="0"  />
+    <Tile id="117" dx="1" dy="0"  />
+  </Layout>
+  <Layout state="open" direction="down">
+    <Tile id="140" dx="0" dy="0" />
+    <Tile id="141" dx="1" dy="0" />
+    <Tile id="159" dx="0" dy="1" />
+    <Tile id="160" dx="1" dy="1" />
+  </Layout>
+
+  <!-- Closed doors -->
+  <Layout state="closed" direction="left">
+    <Tile id="218" dx="-1" dy="0" />
+    <Tile id="219" dx="0"  dy="0" />
+    <Tile id="237" dx="-1" dy="1" />
+    <Tile id="238" dx="0"  dy="1" />
+  </Layout>
+  <Layout state="closed" direction="right">
+    <Tile id="173" dx="0" dy="0" />
+    <Tile id="174" dx="1" dy="0" />
+    <Tile id="192" dx="0" dy="1" />
+    <Tile id="193" dx="1" dy="1" />
+  </Layout>
+  <Layout state="closed" direction="up">
+    <Tile id="133" dx="0" dy="-1" />
+    <Tile id="134" dx="1" dy="-1" />
+    <Tile id="152" dx="0" dy="0"  />
+    <Tile id="153" dx="1" dy="0"  />
+  </Layout>
+  <Layout state="closed" direction="down">
+    <Tile id="215" dx="0" dy="0" />
+    <Tile id="216" dx="1" dy="0" />
+    <Tile id="234" dx="0" dy="1" />
+    <Tile id="235" dx="1" dy="1" />
+  </Layout>
+
+</DoorLayouts>

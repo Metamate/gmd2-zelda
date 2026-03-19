@@ -14,7 +14,7 @@ public class GameObject : IEntity
     // Current state key (e.g., "unpressed" / "pressed")
     public string State { get; set; }
 
-    // Maps state name to the 1-based frame index in the object's atlas
+    // Maps state name to the frame index in the object's atlas
     private readonly System.Collections.Generic.Dictionary<string, int> _stateFrames;
 
     private readonly TextureAtlas _atlas;

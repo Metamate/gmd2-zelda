@@ -88,7 +88,7 @@ public abstract class Entity : IEntity
             _invulnerableTimer += dt;
             _flashTimer += dt;
 
-            if (_flashTimer > 0.06f)
+            if (_flashTimer > GameSettings.InvulFlashInterval)
             {
                 _flashTimer = 0f;
                 _flashTransparent = !_flashTransparent;
@@ -112,7 +112,7 @@ public abstract class Entity : IEntity
     public void DrawSprite(SpriteBatch spriteBatch)
     {
         Color drawColor = (IsInvulnerable && _flashTransparent)
-            ? Color.White * (64f / 255f)
+            ? Color.White * GameSettings.InvulFlashAlpha
             : Color.White;
 
         Vector2 drawPos = Position - SpriteOffset;

@@ -47,12 +47,12 @@ public class PlayState(Game1 game) : GameStateBase(game)
         _player = new Player
         {
             Position  = new Vector2(
-                GameSettings.VirtualWidth  / 2f - 8,
-                GameSettings.VirtualHeight / 2f - 11),
-            Width     = 16,
-            Height    = 22,
+                GameSettings.VirtualWidth  / 2f - GameSettings.PlayerWidth  / 2f,
+                GameSettings.VirtualHeight / 2f - GameSettings.PlayerHeight / 2f),
+            Width     = GameSettings.PlayerWidth,
+            Height    = GameSettings.PlayerHeight,
             WalkSpeed = GameSettings.PlayerWalkSpeed,
-            Health    = 6   // three hearts × 2 health per heart
+            Health    = GameSettings.PlayerStartHealth
         };
 
         foreach (var (key, anim) in EntityDefinitions.CreatePlayerAnimations(walkAtlas, swordAtlas))
@@ -101,21 +101,16 @@ public class PlayState(Game1 game) : GameStateBase(game)
         int healthLeft = _player.Health;
         int ts = GameSettings.TileSize;
 
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < GameSettings.HeartCount; i++)
         {
-            // Frame 5 = full heart, frame 3 = half heart, frame 1 = empty heart
-            int frame;
-            if (healthLeft > 1)
-                frame = 5;
-            else if (healthLeft == 1)
-                frame = 3;
-            else
-                frame = 1;
+            int frame = healthLeft > 1 ? GameSettings.HeartFrameFull
+                      : healthLeft == 1 ? GameSettings.HeartFrameHalf
+                      : GameSettings.HeartFrameEmpty;
 
             _heartsAtlas.GetRegion($"frame_{frame}")
                 .Draw(spriteBatch, new Vector2(i * (ts + 1), 2), Color.White);
 
-            healthLeft -= 2;
+            healthLeft -= GameSettings.HeartHealthPerHeart;
         }
     }
 }

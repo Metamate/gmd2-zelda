@@ -69,8 +69,7 @@ public class Room
                 else if (y == h - 1) tileId = GameSettings.TileBottomWalls[Random.Next(GameSettings.TileBottomWalls.Length)];
                 else                 tileId = GameSettings.TileFloors[Random.Next(GameSettings.TileFloors.Length)];
 
-                // Tile IDs in GameSettings are 1-based (Löve2D compat); Tileset is 0-based.
-                _tilemap.SetTile(x, y, new Tile(tileId - 1, solid));
+                _tilemap.SetTile(x, y, new Tile(tileId, solid));
             }
         }
     }
@@ -123,7 +122,7 @@ public class Room
         var switchObj = new GameObject(
             type: "switch",
             atlas: _switchAtlas,
-            stateFrames: new() { ["unpressed"] = 2, ["pressed"] = 1 },
+            stateFrames: new() { ["unpressed"] = 1, ["pressed"] = 0 },
             defaultState: "unpressed",
             width: 16,
             height: 16
