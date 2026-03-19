@@ -26,20 +26,19 @@ public class PlayState(Game1 game) : GameStateBase(game)
     {
         // 1×1 white pixel for stencil mask rendering
         _pixel = new Texture2D(Game.GraphicsDevice, 1, 1);
-        _pixel.SetData(new[] { Color.White });
+        _pixel.SetData([Color.White]);
 
-        // Load all atlases by splitting textures into uniform grids
-        var tilesTex     = Game.Content.Load<Texture2D>("images/tilesheet");
-        var walkTex      = Game.Content.Load<Texture2D>("images/character_walk");
-        var swordTex     = Game.Content.Load<Texture2D>("images/character_swing_sword");
-        var entityTex    = Game.Content.Load<Texture2D>("images/entities");
-        var heartsTex    = Game.Content.Load<Texture2D>("images/hearts");
-        var switchesTex  = Game.Content.Load<Texture2D>("images/switches");
+        var tilesTex    = Game.Content.Load<Texture2D>("images/tilesheet");
+        var walkTex     = Game.Content.Load<Texture2D>("images/character_walk");
+        var swordTex    = Game.Content.Load<Texture2D>("images/character_swing_sword");
+        var entityTex   = Game.Content.Load<Texture2D>("images/entities");
+        var heartsTex   = Game.Content.Load<Texture2D>("images/hearts");
+        var switchesTex = Game.Content.Load<Texture2D>("images/switches");
 
-        _tileset      = new Tileset(new TextureRegion(tilesTex, 0, 0, tilesTex.Width, tilesTex.Height), 16, 16);
-        _entityAtlas  = TextureAtlas.FromGrid(entityTex,   16, 16);
-        _switchAtlas  = TextureAtlas.FromGrid(switchesTex, 16, 18);
-        _heartsAtlas  = TextureAtlas.FromGrid(heartsTex,   16, 16);
+        _tileset     = new Tileset(new TextureRegion(tilesTex, 0, 0, tilesTex.Width, tilesTex.Height), 16, 16);
+        _entityAtlas = TextureAtlas.FromGrid(entityTex,   16, 16);
+        _heartsAtlas = TextureAtlas.FromGrid(heartsTex,   16, 16);
+        _switchAtlas = TextureAtlas.FromGrid(switchesTex, 16, 18);
 
         var walkAtlas  = TextureAtlas.FromGrid(walkTex,  16, 32);
         var swordAtlas = TextureAtlas.FromGrid(swordTex, 32, 32);

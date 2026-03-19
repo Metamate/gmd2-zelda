@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using GMDCore.Graphics;
+using Zelda.Definitions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Zelda.Audio;
-using Zelda.Definitions;
+
 using Zelda.Entities;
 using Zelda.States.EntityStates;
 
