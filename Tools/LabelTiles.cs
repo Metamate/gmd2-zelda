@@ -13,9 +13,8 @@ string inputPath  = args[0];
 int    tileWidth  = int.Parse(args[1]);
 int    tileHeight = int.Parse(args[2]);
 
-int scale = 3;
-for (int i = 3; i < args.Length - 1; i++)
-    if (args[i] == "--scale") scale = int.Parse(args[i + 1]);
+int scaleIdx = Array.IndexOf(args, "--scale");
+int scale    = scaleIdx >= 0 ? int.Parse(args[scaleIdx + 1]) : 3;
 
 string outputPath = args.Length > 3 && !args[3].StartsWith("--")
     ? args[3]
@@ -53,17 +52,14 @@ for (int row = 0; row <= rows; row++)
 
 // Labels
 for (int row = 0; row < rows; row++)
+for (int col = 0; col < cols; col++)
 {
-    for (int col = 0; col < cols; col++)
-    {
-        int    index = row * cols + col;
-        float  x     = col * tw + 1;
-        float  y     = row * th + 1;
-        string label = index.ToString();
+    float  x     = col * tw + 1;
+    float  y     = row * th + 1;
+    string label = (row * cols + col).ToString();
 
-        draw.DrawString(label, font, shadow, x + 1, y + 1);
-        draw.DrawString(label, font, text,   x,     y);
-    }
+    draw.DrawString(label, font, shadow, x + 1, y + 1);
+    draw.DrawString(label, font, text,   x,     y);
 }
 
 img.Save(outputPath, ImageFormat.Png);
