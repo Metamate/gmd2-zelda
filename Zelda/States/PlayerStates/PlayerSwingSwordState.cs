@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Zelda.Audio;
+using Zelda;
 using Zelda.Entities;
 using Zelda.Input;
 using Zelda.States.EntityStates;
@@ -26,19 +27,19 @@ public class PlayerSwingSwordState : EntityStateBase
 
         // Build a sword hitbox in front of the player based on facing direction.
         // Reach = half a tile; the hitbox is one full tile wide on the perpendicular axis.
-        int px    = (int)_player.Position.X;
-        int py    = (int)_player.Position.Y;
+        int px = (int)_player.Position.X;
+        int py = (int)_player.Position.Y;
         int reach = GameSettings.SwordReach;
-        int ts    = GameSettings.TileSize;
+        int ts = GameSettings.TileSize;
 
         int yOffset = GameSettings.SwordHitboxYOffset;
         _swordHitbox = _player.Direction switch
         {
-            Direction.Left  => new Rectangle(px - reach,         py + yOffset, reach, ts),
+            Direction.Left => new Rectangle(px - reach, py + yOffset, reach, ts),
             Direction.Right => new Rectangle(px + _player.Width, py + yOffset, reach, ts),
-            Direction.Up    => new Rectangle(px,                  py - reach,   ts,    reach),
-            Direction.Down  => new Rectangle(px, py + _player.Height,           ts,    reach),
-            _               => new Rectangle(px, py + _player.Height,           ts,    reach)
+            Direction.Up => new Rectangle(px, py - reach, ts, reach),
+            Direction.Down => new Rectangle(px, py + _player.Height, ts, reach),
+            _ => new Rectangle(px, py + _player.Height, ts, reach)
         };
 
         _player.ChangeAnimation($"sword-{_player.Direction.ToName()}");
@@ -78,5 +79,7 @@ public class PlayerSwingSwordState : EntityStateBase
     public override void Draw(SpriteBatch spriteBatch)
     {
         _player.DrawSprite(spriteBatch);
+        DebugDraw.FillRect(spriteBatch, _swordHitbox, Color.Red * 0.4f); // sword hitbox
+        DebugDraw.FillRect(spriteBatch, _player.Hurtbox, Color.Green * 0.4f); // player hurtbox
     }
 }

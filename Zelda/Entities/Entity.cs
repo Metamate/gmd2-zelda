@@ -20,7 +20,6 @@ public abstract class Entity : IEntity
 
     public bool IsDead => Health <= 0;
 
-    // Pixel dimensions of the collision box
     public int Width { get; set; }
     public int Height { get; set; }
 
@@ -29,7 +28,6 @@ public abstract class Entity : IEntity
     // means the sprite extends above the collision box (perspective look).
     public Vector2 SpriteOffset { get; set; } = Vector2.Zero;
 
-    // IEntity
     public Vector2 Position { get; set; }
 
     public Rectangle Bounds => new((int)Position.X, (int)Position.Y, Width, Height);
@@ -40,7 +38,6 @@ public abstract class Entity : IEntity
 
     public bool Active { get; set; } = true;
 
-    // State machine
     public EntityStateBase State { get; private set; }
 
     public void ChangeState(EntityStateBase newState)
