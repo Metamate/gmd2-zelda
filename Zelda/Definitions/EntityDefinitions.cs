@@ -18,7 +18,7 @@ public static class EntityDefinitions
     private static Dictionary<string, List<AnimDef>> _enemyDefs;
     private static Dictionary<string, EnemyStats> _enemyStats;
 
-    public static IReadOnlyCollection<string> EnemyTypes => _enemyDefs.Keys;
+    public static IEnumerable<string> EnemyTypes => _enemyDefs.Keys;
 
     public static void LoadContent(ContentManager content)
     {

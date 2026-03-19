@@ -8,7 +8,7 @@ using Zelda.Graphics;
 namespace Zelda.World;
 
 // Manages the current and next Room during play, including the camera-shift
-// transition that mirrors the tween in the Löve2D version.
+// transition between rooms.
 public class Dungeon
 {
     private readonly Player _player;
@@ -32,7 +32,7 @@ public class Dungeon
     private float _shiftProgress;
     private bool _shifting;
     private Direction _shiftDirection;
-    private const float ShiftDuration = 1f; // seconds, matches Löve2D Timer.tween(1, ...)
+    private const float ShiftDuration = 1f;
 
     // Fired when PlayerDied event is forwarded from Room
     public event Action OnPlayerDied;

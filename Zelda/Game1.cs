@@ -34,6 +34,7 @@ public class Game1 : Core
         SoundManager.LoadContent(Content);
         Doorway.LoadContent(Content);
         EntityDefinitions.LoadContent(Content);
+        GameObjectDefinitions.LoadContent(Content);
     }
 
     public void SetState(GameStateBase newState)

@@ -9,7 +9,7 @@ public static class GameSettings
 
     public const int TileSize = 16;
 
-    // Map layout
+    // Map layout — total tiles that fit on screen minus 1 border tile on each side
     public const int MapWidth  = VirtualWidth  / TileSize - 2;
     public const int MapHeight = VirtualHeight / TileSize - 2;
 

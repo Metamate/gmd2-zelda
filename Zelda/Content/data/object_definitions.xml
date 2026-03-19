@@ -1,0 +1,6 @@
+<Objects>
+  <Object type="switch" width="16" height="16" defaultState="unpressed">
+    <State name="unpressed" frame="1" />
+    <State name="pressed"   frame="0" />
+  </Object>
+</Objects>

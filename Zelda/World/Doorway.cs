@@ -108,12 +108,7 @@ public class Doorway : IEntity
     {
         Vector2 p = Position + adjacentOffset;
         foreach (var t in (IsOpen ? _openLayouts : _closedLayouts)[_direction])
-            DrawTile(spriteBatch, t.Id, new Vector2(p.X + t.Dx, p.Y + t.Dy));
-    }
-
-    private void DrawTile(SpriteBatch spriteBatch, int tileId, Vector2 position)
-    {
-        _tileset.GetTile(tileId).Draw(spriteBatch, position, Color.White);
+            _tileset.GetTile(t.Id).Draw(spriteBatch, new Vector2(p.X + t.Dx, p.Y + t.Dy), Color.White);
     }
 
     public bool Collides(IEntity other) =>

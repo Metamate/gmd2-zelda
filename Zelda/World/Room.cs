@@ -120,13 +120,14 @@ public class Room
     {
         var (minX, maxX, minY, maxY) = GetSpawnBounds();
 
+        var stats = GameObjectDefinitions.GetStats("switch");
         var switchObj = new GameObject(
             type: "switch",
             atlas: _switchAtlas,
-            stateFrames: new() { ["unpressed"] = 1, ["pressed"] = 0 },
-            defaultState: "unpressed",
-            width: 16,
-            height: 16
+            stateFrames: stats.StateFrames,
+            defaultState: stats.DefaultState,
+            width: stats.Width,
+            height: stats.Height
         );
         switchObj.Position = new Vector2(Random.Next(minX, maxX + 1), Random.Next(minY, maxY + 1));
 
@@ -217,7 +218,10 @@ public class Room
         foreach (var doorway in Doorways)
             doorway.DrawAt(spriteBatch, adjacentOffset);
 
-        // Draw objects (switches, etc.)
+        // Draw objects (switches, etc.).
+        // The adjacentOffset shifts entities into the next-room's screen position
+        // during the camera-shift transition; we restore the position after drawing
+        // so gameplay logic always works in room-local coordinates.
         foreach (var obj in Objects)
         {
             var savedPos = obj.Position;
@@ -226,7 +230,7 @@ public class Room
             obj.Position = savedPos;
         }
 
-        // Draw enemies
+        // Draw enemies (same offset pattern as objects above)
         foreach (var enemy in Enemies)
         {
             var savedPos = enemy.Position;

@@ -9,6 +9,18 @@ public class GameOverState(Game1 game) : GameStateBase(game)
     private const string Title    = "GAME OVER";
     private const string Subtitle = "Press Enter";
 
+    private Vector2 _titlePos;
+    private Vector2 _subtitlePos;
+
+    public override void Enter()
+    {
+        var titleSize = Game1.DefaultFont.MeasureString(Title);
+        _titlePos    = ScreenCenter(Title, GameSettings.UiTitleYOffset);
+        _subtitlePos = new Vector2(
+            ScreenCenter(Subtitle, scale: GameSettings.UiSubtitleScale).X,
+            _titlePos.Y + titleSize.Y + GameSettings.UiSubtitleSpacing);
+    }
+
     public override void Update(GameTime gameTime)
     {
         if (GameController.Confirm)
@@ -17,16 +29,9 @@ public class GameOverState(Game1 game) : GameStateBase(game)
 
     public override void Draw(SpriteBatch spriteBatch)
     {
-        var font      = Game1.DefaultFont;
-        var titleSize = font.MeasureString(Title);
-        var titlePos  = ScreenCenter(Title, GameSettings.UiTitleYOffset);
-        var subPos    = new Vector2(
-            ScreenCenter(Subtitle, scale: GameSettings.UiSubtitleScale).X,
-            titlePos.Y + titleSize.Y + GameSettings.UiSubtitleSpacing);
-
         spriteBatch.Begin(transformMatrix: Game.ScreenScaleMatrix, samplerState: SamplerState.PointClamp);
-        spriteBatch.DrawString(font, Title,    titlePos, GameSettings.GameOverColor);
-        spriteBatch.DrawString(font, Subtitle, subPos,   Color.White,
+        spriteBatch.DrawString(Game1.DefaultFont, Title,    _titlePos,    GameSettings.GameOverColor);
+        spriteBatch.DrawString(Game1.DefaultFont, Subtitle, _subtitlePos, Color.White,
             0f, Vector2.Zero, GameSettings.UiSubtitleScale, SpriteEffects.None, 0f);
         spriteBatch.End();
     }

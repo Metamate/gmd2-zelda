@@ -22,6 +22,9 @@
 #begin data/enemy_animations.xml
 /copy:data/enemy_animations.xml
 
+#begin data/object_definitions.xml
+/copy:data/object_definitions.xml
+
 #begin fonts/font.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
