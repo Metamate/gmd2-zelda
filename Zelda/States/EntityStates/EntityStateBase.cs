@@ -27,8 +27,6 @@ public abstract class EntityStateBase
 
     public virtual void Draw(SpriteBatch spriteBatch)
     {
-        // Use non-virtual DrawSprite to avoid dispatching back to the Enemy/Player
-        // override (which would re-invoke State.Draw and recurse infinitely).
         Entity.DrawSprite(spriteBatch);
     }
 }

@@ -76,8 +76,6 @@ public class PlayerSwingSwordState : EntityStateBase
 
     public override void Draw(SpriteBatch spriteBatch)
     {
-        // Must call DrawSprite (non-virtual) rather than Draw, which would dispatch
-        // back to Player.Draw → State.Draw → here → infinite recursion.
         _player.DrawSprite(spriteBatch);
     }
 }

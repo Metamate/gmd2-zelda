@@ -5,7 +5,7 @@ namespace Zelda.Entities;
 public class Player : Entity
 {
     // The player's collision box uses the bottom half of the sprite for
-    // top-down perspective, matching the Löve2D source.
+    // top-down perspective
     public override bool Collides(IEntity other)
     {
         var selfRect = new Rectangle(

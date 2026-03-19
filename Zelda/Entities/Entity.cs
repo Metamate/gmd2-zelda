@@ -107,8 +107,6 @@ public abstract class Entity : IEntity
         State?.Update(gameTime);
     }
 
-    // Non-virtual: called by states to draw the sprite without triggering the
-    // virtual override in Enemy/Player (which would re-invoke State.Draw and recurse).
     public void DrawSprite(SpriteBatch spriteBatch)
     {
         Color drawColor = (IsInvulnerable && _flashTransparent)
@@ -119,5 +117,5 @@ public abstract class Entity : IEntity
         Sprite?.Region?.Draw(spriteBatch, drawPos, drawColor);
     }
 
-    public virtual void Draw(SpriteBatch spriteBatch) => State?.Draw(spriteBatch);
+    public void Draw(SpriteBatch spriteBatch) => State?.Draw(spriteBatch);
 }
