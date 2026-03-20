@@ -209,8 +209,7 @@ public class Dungeon
         // Pass 1: rooms and their entities
         spriteBatch.Begin(transformMatrix: worldTransform, samplerState: SamplerState.PointClamp);
         CurrentRoom.Render(spriteBatch, Vector2.Zero);
-        if (_nextRoom != null)
-            _nextRoom.Render(spriteBatch, _nextRoomOffset);
+        _nextRoom?.Render(spriteBatch, _nextRoomOffset);
         spriteBatch.End();
 
         // Pass 2: write stencil mask at the four door-arch corridors

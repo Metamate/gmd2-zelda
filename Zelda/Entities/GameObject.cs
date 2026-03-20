@@ -42,10 +42,12 @@ public class GameObject(
 
     public void Update(GameTime gameTime) { }
 
-    public void Draw(SpriteBatch spriteBatch)
+    public void Draw(SpriteBatch spriteBatch) => DrawAt(spriteBatch, Vector2.Zero);
+
+    public void DrawAt(SpriteBatch spriteBatch, Vector2 offset)
     {
         int frame = _stateFrames[State];
-        _atlas.GetRegion($"frame_{frame}").Draw(spriteBatch, Position, Color.White);
+        _atlas.GetRegion($"frame_{frame}").Draw(spriteBatch, Position + offset, Color.White);
     }
 
     public bool Collides(IEntity other) =>

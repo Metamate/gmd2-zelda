@@ -25,8 +25,10 @@ public abstract class EntityStateBase
     // Called each frame for AI-controlled entities; players override or ignore this.
     public virtual void ProcessAI(Room room, GameTime gameTime) { }
 
-    public virtual void Draw(SpriteBatch spriteBatch)
+    public void Draw(SpriteBatch spriteBatch) => DrawAt(spriteBatch, Vector2.Zero);
+
+    public virtual void DrawAt(SpriteBatch spriteBatch, Vector2 offset)
     {
-        Entity.DrawSprite(spriteBatch);
+        Entity.DrawSprite(spriteBatch, offset);
     }
 }

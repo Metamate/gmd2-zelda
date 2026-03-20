@@ -209,25 +209,12 @@ public class Room
         foreach (var doorway in Doorways)
             doorway.DrawAt(spriteBatch, adjacentOffset);
 
-        // Draw objects (switches, etc.).
-        // The adjacentOffset shifts entities into the next-room's screen position
-        // during the camera-shift transition; we restore the position after drawing
-        // so gameplay logic always works in room-local coordinates.
+        // Draw objects and enemies offset into the adjacent room's screen position
+        // during the camera-shift transition; DrawAt takes offset without mutating Position.
         foreach (var obj in Objects)
-        {
-            var savedPos = obj.Position;
-            obj.Position += adjacentOffset;
-            obj.Draw(spriteBatch);
-            obj.Position = savedPos;
-        }
+            obj.DrawAt(spriteBatch, adjacentOffset);
 
-        // Draw enemies (same offset pattern as objects above)
         foreach (var enemy in Enemies)
-        {
-            var savedPos = enemy.Position;
-            enemy.Position += adjacentOffset;
-            enemy.Draw(spriteBatch);
-            enemy.Position = savedPos;
-        }
+            enemy.DrawAt(spriteBatch, adjacentOffset);
     }
 }

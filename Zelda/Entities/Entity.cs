@@ -104,15 +104,17 @@ public abstract class Entity : IEntity
         State?.Update(gameTime);
     }
 
-    public void DrawSprite(SpriteBatch spriteBatch)
+    public void DrawSprite(SpriteBatch spriteBatch, Vector2 offset = default)
     {
         Color drawColor = (IsInvulnerable && _flashTransparent)
             ? Color.White * GameSettings.InvulFlashAlpha
             : Color.White;
 
-        Vector2 drawPos = Position - SpriteOffset;
+        Vector2 drawPos = Position + offset - SpriteOffset;
         Sprite?.Region?.Draw(spriteBatch, drawPos, drawColor);
     }
 
-    public void Draw(SpriteBatch spriteBatch) => State?.Draw(spriteBatch);
+    public void Draw(SpriteBatch spriteBatch) => DrawAt(spriteBatch, Vector2.Zero);
+
+    public void DrawAt(SpriteBatch spriteBatch, Vector2 offset) => State?.DrawAt(spriteBatch, offset);
 }

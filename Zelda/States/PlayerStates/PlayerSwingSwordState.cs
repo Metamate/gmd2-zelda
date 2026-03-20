@@ -76,9 +76,9 @@ public class PlayerSwingSwordState : EntityStateBase
         }
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void DrawAt(SpriteBatch spriteBatch, Vector2 offset)
     {
-        _player.DrawSprite(spriteBatch);
+        _player.DrawSprite(spriteBatch, offset);
         // DebugDraw.FillRect(spriteBatch, _swordHitbox, Color.Red * 0.4f); // sword hitbox
         // DebugDraw.FillRect(spriteBatch, _player.Hurtbox, Color.Green * 0.4f); // player hurtbox
     }
