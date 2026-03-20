@@ -1,7 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Zelda;
+namespace Zelda.Graphics;
 
 // Minimal debug utility for drawing filled rectangles over the game world.
 // The pixel texture is created once on first use and reused every frame.
