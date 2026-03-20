@@ -32,7 +32,6 @@ public class Dungeon
     private float _shiftProgress;
     private bool _shifting;
     private Direction _shiftDirection;
-    private const float ShiftDuration = 1f;
 
     // Fired when PlayerDied event is forwarded from Room
     public event Action OnPlayerDied;
@@ -146,7 +145,7 @@ public class Dungeon
         if (_shifting)
         {
             float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
-            _shiftProgress = Math.Min(1f, _shiftProgress + dt / ShiftDuration);
+            _shiftProgress = Math.Min(1f, _shiftProgress + dt / GameSettings.RoomShiftDuration);
 
             // Move the camera toward _shiftTarget; everything rendered through the
             // combined camera+screen-scale matrix shifts automatically.

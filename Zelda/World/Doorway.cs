@@ -31,6 +31,7 @@ public class Doorway : IEntity
     public bool Active { get; set; } = true;
 
     // Each door variant is 4 tiles; each entry is (tile ID, x offset, y offset).
+    // record struct gives value equality and a concise constructor; readonly prevents mutation.
     private readonly record struct TilePlacement(int Id, int Dx, int Dy);
 
     private static Dictionary<Direction, TilePlacement[]> _openLayouts;

@@ -61,7 +61,7 @@ public class PlayerWalkState : EntityWalkState
         float speed = GameSettings.PlayerWalkSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
         Vector2 step = _player.Direction.ToVector2() * speed;
 
-        bool horizontal = step.Y == 0;
+        bool movingHorizontally = step.Y == 0;
 
         _player.Position += step;
 
@@ -70,7 +70,7 @@ public class PlayerWalkState : EntityWalkState
             if (_player.Collides(doorway) && doorway.IsOpen)
             {
                 // Align the player to the centre of the doorway on the perpendicular axis
-                if (horizontal)
+                if (movingHorizontally)
                     _player.Position = _player.Position with { Y = doorway.Position.Y + (doorway.Height - _player.Height) / 2f };
                 else
                     _player.Position = _player.Position with { X = doorway.Position.X + (doorway.Width  - _player.Width)  / 2f };

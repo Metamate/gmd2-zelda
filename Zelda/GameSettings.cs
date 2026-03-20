@@ -27,6 +27,9 @@ public static class GameSettings
     public const float PlayerSpriteOffsetY = 5f;    // sprite extends above collision box (perspective)
     public const float PlayerSwordOffsetX  = 8f;    // sword sprite (32px) centred over collision box (16px)
 
+    // Room transition — duration in seconds for the camera shift between rooms
+    public const float RoomShiftDuration = 1f;
+
     // Door arch stencil mask — extra pixels the mask extends beyond the arch opening
     public const int DoorArchPadding = 6;
 
