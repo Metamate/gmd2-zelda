@@ -13,7 +13,7 @@ public class EntityIdleState : EntityStateBase
 
     public override void Enter()
     {
-        Entity.ChangeAnimation($"idle-{Entity.Direction.ToName()}");
+        Entity.ChangeAnimation(AnimationKeys.Idle(Entity.Direction));
         _waitDuration = 0f;
         _waitTimer = 0f;
     }

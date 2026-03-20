@@ -6,6 +6,7 @@ using GMDCore.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Zelda.Entities;
 
 namespace Zelda.Definitions;
 
@@ -16,7 +17,7 @@ public static class EntityDefinitions
     public record EnemyStats(int Width, int Height, int WalkSpeed, int Health);
 
     private static TextureAtlas _enemyAtlas;
-    private static Dictionary<string, Animation> _playerAnimations;
+    private static Dictionary<AnimationKey, Animation> _playerAnimations;
     private static Dictionary<string, List<AnimDef>> _enemyDefs;
     private static Dictionary<string, EnemyStats> _enemyStats;
 
@@ -32,7 +33,7 @@ public static class EntityDefinitions
     {
         var root = LoadXml(content, "data/player_animations.xml").Root;
 
-        _playerAnimations = new Dictionary<string, Animation>();
+        _playerAnimations = new Dictionary<AnimationKey, Animation>();
 
         // Each <Atlas> group declares its image and frame size; animations inside
         // are built from that atlas so callers need no knowledge of which image
@@ -47,7 +48,7 @@ public static class EntityDefinitions
             foreach (var animEl in atlasEl.Elements("Animation"))
             {
                 var def = ParseAnimDef(animEl);
-                _playerAnimations[def.Name] = atlas.CreateAnimation(def.Frames, def.Interval, def.Loop);
+                _playerAnimations[AnimationKeys.Parse(def.Name)] = atlas.CreateAnimation(def.Frames, def.Interval, def.Loop);
             }
         }
     }
@@ -92,11 +93,11 @@ public static class EntityDefinitions
         Loop:     e.Attribute("loop")?.Value != "false"
     );
 
-    public static Dictionary<string, Animation> CreatePlayerAnimations() => _playerAnimations;
+    public static Dictionary<AnimationKey, Animation> CreatePlayerAnimations() => _playerAnimations;
 
-    public static Dictionary<string, Animation> CreateEnemyAnimations(string type) =>
+    public static Dictionary<AnimationKey, Animation> CreateEnemyAnimations(string type) =>
         _enemyDefs[type].ToDictionary(
-            d => d.Name,
+            d => AnimationKeys.Parse(d.Name),
             d => _enemyAtlas.CreateAnimation(d.Frames, d.Interval, d.Loop)
         );
 

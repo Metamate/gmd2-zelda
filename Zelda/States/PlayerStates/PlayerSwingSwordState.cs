@@ -36,7 +36,7 @@ public class PlayerSwingSwordState(Player player, Dungeon dungeon) : EntityState
             _ => new Rectangle(px, py + _player.Height, ts, reach)
         };
 
-        _player.ChangeAnimation($"sword-{_player.Direction.ToName()}");
+        _player.ChangeAnimation(AnimationKeys.Sword(_player.Direction));
 
         SoundManager.PlaySound("sword");
         _player.Sprite.Refresh();

@@ -20,7 +20,7 @@ public class PlayerIdleState : EntityStateBase
     public override void Enter()
     {
         _player.SpriteOffset = new Vector2(0, GameSettings.PlayerSpriteOffsetY);
-        _player.ChangeAnimation($"idle-{_player.Direction.ToName()}");
+        _player.ChangeAnimation(AnimationKeys.Idle(_player.Direction));
     }
 
     public override void Update(GameTime gameTime)

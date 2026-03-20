@@ -10,7 +10,7 @@ public abstract class Entity : IEntity
 {
     public Direction Direction { get; set; } = Direction.Down;
 
-    public Dictionary<string, Animation> Animations { get; } = new();
+    public Dictionary<AnimationKey, Animation> Animations { get; } = new();
 
     public AnimatedSprite Sprite { get; set; }
 
@@ -65,12 +65,12 @@ public abstract class Entity : IEntity
 
     public void Damage(int amount) => Health -= amount;
 
-    public void ChangeAnimation(string name)
+    public void ChangeAnimation(AnimationKey key)
     {
         if (Sprite == null)
-            Sprite = new AnimatedSprite(Animations[name]);
+            Sprite = new AnimatedSprite(Animations[key]);
         else
-            Sprite.Play(Animations[name]);
+            Sprite.Play(Animations[key]);
     }
 
     public virtual bool Collides(IEntity other) =>

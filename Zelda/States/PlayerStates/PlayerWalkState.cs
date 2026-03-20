@@ -31,22 +31,22 @@ public class PlayerWalkState : EntityWalkState
         if (GameController.Left)
         {
             _player.Direction = Direction.Left;
-            _player.ChangeAnimation("walk-left");
+            _player.ChangeAnimation(AnimationKey.WalkLeft);
         }
         else if (GameController.Right)
         {
             _player.Direction = Direction.Right;
-            _player.ChangeAnimation("walk-right");
+            _player.ChangeAnimation(AnimationKey.WalkRight);
         }
         else if (GameController.Up)
         {
             _player.Direction = Direction.Up;
-            _player.ChangeAnimation("walk-up");
+            _player.ChangeAnimation(AnimationKey.WalkUp);
         }
         else if (GameController.Down)
         {
             _player.Direction = Direction.Down;
-            _player.ChangeAnimation("walk-down");
+            _player.ChangeAnimation(AnimationKey.WalkDown);
         }
         else
         {

@@ -17,7 +17,7 @@ public class EntityWalkState : EntityStateBase
 
     public override void Enter()
     {
-        Entity.ChangeAnimation($"walk-{Entity.Direction.ToName()}");
+        Entity.ChangeAnimation(AnimationKeys.Walk(Entity.Direction));
     }
 
     public override void Update(GameTime gameTime)
@@ -77,7 +77,7 @@ public class EntityWalkState : EntityStateBase
         {
             _moveDuration = room.Random.Next(GameSettings.EntityMoveDurationMin, GameSettings.EntityMoveDurationMax);
             Entity.Direction = Directions[room.Random.Next(Directions.Length)];
-            Entity.ChangeAnimation($"walk-{Entity.Direction.ToName()}");
+            Entity.ChangeAnimation(AnimationKeys.Walk(Entity.Direction));
         }
         else if (_movementTimer > _moveDuration)
         {
@@ -89,7 +89,7 @@ public class EntityWalkState : EntityStateBase
             {
                 _moveDuration = room.Random.Next(GameSettings.EntityMoveDurationMin, GameSettings.EntityMoveDurationMax);
                 Entity.Direction = Directions[room.Random.Next(Directions.Length)];
-                Entity.ChangeAnimation($"walk-{Entity.Direction.ToName()}");
+                Entity.ChangeAnimation(AnimationKeys.Walk(Entity.Direction));
             }
         }
 
