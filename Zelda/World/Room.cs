@@ -186,7 +186,7 @@ public class Room
     // Raised when the player's health reaches zero; PlayState subscribes to this.
     public event Action OnPlayerDied;
 
-    public void Render(SpriteBatch spriteBatch, Vector2 adjacentOffset)
+    public void Render(SpriteBatch spriteBatch)
     {
         int ts   = GameSettings.TileSize;
         int offX = _renderOffsetX;
@@ -194,27 +194,20 @@ public class Room
         int w    = GameSettings.MapWidth;
         int h    = GameSettings.MapHeight;
 
-        // Draw tiles via Tileset, offsetting into world/room position
         for (int y = 0; y < h; y++)
-        {
             for (int x = 0; x < w; x++)
             {
                 var tile = _tilemap.GetTile(x, y);
-                var pos  = new Vector2(x * ts + offX + adjacentOffset.X, y * ts + offY + adjacentOffset.Y);
-                _tilemap.Tileset.GetTile(tile.GraphicId).Draw(spriteBatch, pos, Color.White);
+                _tilemap.Tileset.GetTile(tile.GraphicId).Draw(spriteBatch, new Vector2(x * ts + offX, y * ts + offY), Color.White);
             }
-        }
 
-        // Draw doorways
         foreach (var doorway in Doorways)
-            doorway.DrawAt(spriteBatch, adjacentOffset);
+            doorway.Draw(spriteBatch);
 
-        // Draw objects and enemies offset into the adjacent room's screen position
-        // during the camera-shift transition; DrawAt takes offset without mutating Position.
         foreach (var obj in Objects)
-            obj.DrawAt(spriteBatch, adjacentOffset);
+            obj.Draw(spriteBatch);
 
         foreach (var enemy in Enemies)
-            enemy.DrawAt(spriteBatch, adjacentOffset);
+            enemy.Draw(spriteBatch);
     }
 }

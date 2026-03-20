@@ -101,14 +101,10 @@ public class Doorway : IEntity
 
     public void Update(GameTime gameTime) { }
 
-    public void Draw(SpriteBatch spriteBatch) => DrawAt(spriteBatch, Vector2.Zero);
-
-    // Draw with an additional offset used during room-shift camera translation
-    public void DrawAt(SpriteBatch spriteBatch, Vector2 adjacentOffset)
+    public void Draw(SpriteBatch spriteBatch)
     {
-        Vector2 p = Position + adjacentOffset;
         foreach (var t in (IsOpen ? _openLayouts : _closedLayouts)[_direction])
-            _tileset.GetTile(t.Id).Draw(spriteBatch, new Vector2(p.X + t.Dx, p.Y + t.Dy), Color.White);
+            _tileset.GetTile(t.Id).Draw(spriteBatch, new Vector2(Position.X + t.Dx, Position.Y + t.Dy), Color.White);
     }
 
     public bool Collides(IEntity other) =>

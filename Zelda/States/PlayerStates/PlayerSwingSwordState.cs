@@ -9,17 +9,11 @@ using Zelda.World;
 
 namespace Zelda.States.PlayerStates;
 
-public class PlayerSwingSwordState : EntityStateBase
+public class PlayerSwingSwordState(Player player, Dungeon dungeon) : EntityStateBase(player)
 {
-    private readonly Player _player;
-    private readonly Dungeon _dungeon;
+    private readonly Player _player = player;
+    private readonly Dungeon _dungeon = dungeon;
     private Rectangle _swordHitbox;
-
-    public PlayerSwingSwordState(Player player, Dungeon dungeon) : base(player)
-    {
-        _player = player;
-        _dungeon = dungeon;
-    }
 
     public override void Enter()
     {
@@ -76,9 +70,9 @@ public class PlayerSwingSwordState : EntityStateBase
         }
     }
 
-    public override void DrawAt(SpriteBatch spriteBatch, Vector2 offset)
+    public override void Draw(SpriteBatch spriteBatch)
     {
-        _player.DrawSprite(spriteBatch, offset);
+        _player.DrawSprite(spriteBatch);
         // DebugDraw.FillRect(spriteBatch, _swordHitbox, Color.Red * 0.4f); // sword hitbox
         // DebugDraw.FillRect(spriteBatch, _player.Hurtbox, Color.Green * 0.4f); // player hurtbox
     }

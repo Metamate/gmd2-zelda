@@ -206,11 +206,20 @@ public class Dungeon
         // Ordering: camera translates in virtual space first, then scale to screen.
         var worldTransform = _camera.Transform * screenScaleMatrix;
 
-        // Pass 1: rooms and their entities
+        // Pass 1: rooms and their entities.
+        // Each room is drawn in its own Begin/End with the room offset baked into
+        // the transform, so rooms and entities just call Draw with no offset knowledge.
         spriteBatch.Begin(transformMatrix: worldTransform, samplerState: SamplerState.PointClamp);
-        CurrentRoom.Render(spriteBatch, Vector2.Zero);
-        _nextRoom?.Render(spriteBatch, _nextRoomOffset);
+        CurrentRoom.Render(spriteBatch);
         spriteBatch.End();
+
+        if (_nextRoom != null)
+        {
+            var nextTransform = Matrix.CreateTranslation(_nextRoomOffset.X, _nextRoomOffset.Y, 0) * worldTransform;
+            spriteBatch.Begin(transformMatrix: nextTransform, samplerState: SamplerState.PointClamp);
+            _nextRoom.Render(spriteBatch);
+            spriteBatch.End();
+        }
 
         // Pass 2: write stencil mask at the four door-arch corridors
         spriteBatch.Begin(
