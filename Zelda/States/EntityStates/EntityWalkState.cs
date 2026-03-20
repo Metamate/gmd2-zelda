@@ -30,10 +30,11 @@ public class EntityWalkState : EntityStateBase
         int offsetY  = GameSettings.MapRenderOffsetY;
         int mapH     = GameSettings.MapHeight;
 
+        Entity.Position += Entity.Direction.ToVector2() * Entity.WalkSpeed * dt;
+
         switch (Entity.Direction)
         {
             case Direction.Left:
-                Entity.Position = Entity.Position with { X = Entity.Position.X - Entity.WalkSpeed * dt };
                 if (Entity.Position.X <= offsetX + tileSize)
                 {
                     Entity.Position = Entity.Position with { X = offsetX + tileSize };
@@ -42,7 +43,6 @@ public class EntityWalkState : EntityStateBase
                 break;
 
             case Direction.Right:
-                Entity.Position = Entity.Position with { X = Entity.Position.X + Entity.WalkSpeed * dt };
                 if (Entity.Position.X + Entity.Width >= GameSettings.VirtualWidth - tileSize * 2)
                 {
                     Entity.Position = Entity.Position with { X = GameSettings.VirtualWidth - tileSize * 2 - Entity.Width };
@@ -51,7 +51,6 @@ public class EntityWalkState : EntityStateBase
                 break;
 
             case Direction.Up:
-                Entity.Position = Entity.Position with { Y = Entity.Position.Y - Entity.WalkSpeed * dt };
                 if (Entity.Position.Y <= offsetY + tileSize - Entity.Height / 2f)
                 {
                     Entity.Position = Entity.Position with { Y = offsetY + tileSize - Entity.Height / 2f };
@@ -60,7 +59,6 @@ public class EntityWalkState : EntityStateBase
                 break;
 
             case Direction.Down:
-                Entity.Position = Entity.Position with { Y = Entity.Position.Y + Entity.WalkSpeed * dt };
                 float bottomEdge = offsetY + mapH * tileSize - tileSize;
                 if (Entity.Position.Y + Entity.Height >= bottomEdge)
                 {

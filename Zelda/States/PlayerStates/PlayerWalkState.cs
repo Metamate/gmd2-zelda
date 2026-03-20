@@ -74,14 +74,7 @@ public class PlayerWalkState : EntityWalkState
     {
         // Convert direction to a movement step vector for the probe
         float speed = GameSettings.PlayerWalkSpeed * dt;
-        Vector2 step = _player.Direction switch
-        {
-            Direction.Left  => new Vector2(-speed,  0),
-            Direction.Right => new Vector2( speed,  0),
-            Direction.Up    => new Vector2(0, -speed),
-            Direction.Down  => new Vector2(0,  speed),
-            _               => Vector2.Zero
-        };
+        Vector2 step = _player.Direction.ToVector2() * speed;
 
         bool horizontal = step.Y == 0;
 

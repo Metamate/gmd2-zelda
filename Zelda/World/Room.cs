@@ -122,7 +122,7 @@ public class Room
 
         // Behaviour is wired here rather than inside GameObject because objects are
         // data-driven (defined in XML). A subclass per object type would defeat that purpose.
-        switchObj.OnCollide = () =>
+        switchObj.OnCollide += () =>
         {
             if (switchObj.State == "unpressed")
             {
@@ -179,7 +179,7 @@ public class Room
             obj.Update(gameTime);
 
             if (_player.Collides(obj))
-                obj.OnCollide();
+                obj.OnCollide?.Invoke();
         }
     }
 
