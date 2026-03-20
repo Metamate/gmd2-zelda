@@ -72,7 +72,7 @@ public class Room
             MinX: offX + ts,
             MaxX: GameSettings.VirtualWidth - ts * 2 - ts,
             MinY: offY + ts,
-            MaxY: offY + mapH * ts - ts - ts
+            MaxY: offY + mapH * ts - ts * 2
         );
     }
 

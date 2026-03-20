@@ -11,6 +11,8 @@ namespace Zelda;
 public class Game1 : Core
 {
     private GameStateBase _currentState;
+    // Re-exposed as public so game states can pass it to SpriteBatch.Begin().
+    // 'new' widens the visibility from protected (in Core) to public here.
     public new Matrix ScreenScaleMatrix => base.ScreenScaleMatrix;
 
     public static SpriteFont DefaultFont { get; private set; }

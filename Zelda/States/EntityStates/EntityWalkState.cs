@@ -6,7 +6,11 @@ namespace Zelda.States.EntityStates;
 
 public class EntityWalkState : EntityStateBase
 {
+    // Set to true by Update() when the entity hits a wall; read by PlayerWalkState
+    // to detect doorway transitions, and by ProcessAI to pick a new direction.
     protected bool Bumped;
+
+    private bool _started;
     private float _moveDuration;
     private float _movementTimer;
 
@@ -18,6 +22,8 @@ public class EntityWalkState : EntityStateBase
     public override void Enter()
     {
         Entity.ChangeAnimation(AnimationKeys.Walk(Entity.Direction));
+        _started = false;
+        _movementTimer = 0f;
     }
 
     public override void Update(GameTime gameTime)
@@ -71,13 +77,9 @@ public class EntityWalkState : EntityStateBase
 
     public override void ProcessAI(Room room, GameTime gameTime)
     {
-        float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-        if (_moveDuration == 0f || Bumped)
+        if (!_started || Bumped)
         {
-            _moveDuration = room.Random.Next(GameSettings.EntityMoveDurationMin, GameSettings.EntityMoveDurationMax);
-            Entity.Direction = Directions[room.Random.Next(Directions.Length)];
-            Entity.ChangeAnimation(AnimationKeys.Walk(Entity.Direction));
+            PickNewMoveSegment(room);
         }
         else if (_movementTimer > _moveDuration)
         {
@@ -86,13 +88,17 @@ public class EntityWalkState : EntityStateBase
             if (room.Random.Next(GameSettings.EntityIdleChance) == 0)
                 Entity.ChangeState(new EntityIdleState(Entity));
             else
-            {
-                _moveDuration = room.Random.Next(GameSettings.EntityMoveDurationMin, GameSettings.EntityMoveDurationMax);
-                Entity.Direction = Directions[room.Random.Next(Directions.Length)];
-                Entity.ChangeAnimation(AnimationKeys.Walk(Entity.Direction));
-            }
+                PickNewMoveSegment(room);
         }
 
-        _movementTimer += dt;
+        _movementTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+    }
+
+    private void PickNewMoveSegment(Room room)
+    {
+        _moveDuration    = room.Random.Next(GameSettings.EntityMoveDurationMin, GameSettings.EntityMoveDurationMax);
+        Entity.Direction = Directions[room.Random.Next(Directions.Length)];
+        Entity.ChangeAnimation(AnimationKeys.Walk(Entity.Direction));
+        _started = true;
     }
 }

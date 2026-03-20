@@ -25,34 +25,20 @@ public class PlayerWalkState : EntityWalkState
 
     public override void Update(GameTime gameTime)
     {
-        float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+        // Map input to direction; transition to idle if no key is held
+        Direction? dir = GameController.Left  ? Direction.Left  :
+                         GameController.Right ? Direction.Right :
+                         GameController.Up    ? Direction.Up    :
+                         GameController.Down  ? Direction.Down  : null;
 
-        // Determine direction from input
-        if (GameController.Left)
-        {
-            _player.Direction = Direction.Left;
-            _player.ChangeAnimation(AnimationKey.WalkLeft);
-        }
-        else if (GameController.Right)
-        {
-            _player.Direction = Direction.Right;
-            _player.ChangeAnimation(AnimationKey.WalkRight);
-        }
-        else if (GameController.Up)
-        {
-            _player.Direction = Direction.Up;
-            _player.ChangeAnimation(AnimationKey.WalkUp);
-        }
-        else if (GameController.Down)
-        {
-            _player.Direction = Direction.Down;
-            _player.ChangeAnimation(AnimationKey.WalkDown);
-        }
-        else
+        if (dir is null)
         {
             _player.ChangeState(new PlayerIdleState(_player, _dungeon));
             return;
         }
+
+        _player.Direction = dir.Value;
+        _player.ChangeAnimation(AnimationKeys.Walk(dir.Value));
 
         if (GameController.SwingSword)
         {
@@ -65,15 +51,14 @@ public class PlayerWalkState : EntityWalkState
 
         // If we hit a wall, check if there is an open doorway to transition through
         if (Bumped)
-        {
-            CheckDoorwayTransition(dt);
-        }
+            CheckDoorwayTransition(gameTime);
     }
 
-    private void CheckDoorwayTransition(float dt)
+    private void CheckDoorwayTransition(GameTime gameTime)
     {
-        // Convert direction to a movement step vector for the probe
-        float speed = GameSettings.PlayerWalkSpeed * dt;
+        // Probe one step ahead in the current direction to check for an open doorway,
+        // then restore position — movement only happens via BeginShift if found.
+        float speed = GameSettings.PlayerWalkSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
         Vector2 step = _player.Direction.ToVector2() * speed;
 
         bool horizontal = step.Y == 0;
