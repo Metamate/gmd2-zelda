@@ -8,30 +8,29 @@ public class EntityIdleState : EntityStateBase
 {
     private float _waitDuration;
     private float _waitTimer;
+    private bool _started;
 
     public EntityIdleState(Entity entity) : base(entity) { }
 
     public override void Enter()
     {
         Entity.ChangeAnimation(AnimationKeys.Idle(Entity.Direction));
-        _waitDuration = 0f;
+        _started = false;
         _waitTimer = 0f;
     }
 
-    // AI: wait a random duration, then resume walking.
+    // AI: pick a random wait duration on the first tick, then count down and resume walking.
     public override void ProcessAI(Room room, GameTime gameTime)
     {
-        float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-        if (_waitDuration == 0f)
+        if (!_started)
         {
             _waitDuration = room.Random.Next(GameSettings.EntityMoveDurationMin, GameSettings.EntityMoveDurationMax);
+            _started = true;
+            return;
         }
-        else
-        {
-            _waitTimer += dt;
-            if (_waitTimer > _waitDuration)
-                Entity.ChangeState(new EntityWalkState(Entity));
-        }
+
+        _waitTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+        if (_waitTimer > _waitDuration)
+            Entity.ChangeState(new EntityWalkState(Entity));
     }
 }

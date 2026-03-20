@@ -22,4 +22,16 @@ public abstract class GameStateBase(Game1 game)
             GameSettings.VirtualWidth  / 2f - size.X / 2f,
             GameSettings.VirtualHeight / 2f - size.Y / 2f + yOffset);
     }
+
+    // Returns positions for a centred title + subtitle pair.
+    // The subtitle sits below the title, independently centred at subtitle scale.
+    protected static (Vector2 TitlePos, Vector2 SubtitlePos) CalculateTitleLayout(string title, string subtitle)
+    {
+        var titlePos    = ScreenCenter(title, GameSettings.UiTitleYOffset);
+        float titleHeight = Game1.DefaultFont.MeasureString(title).Y;
+        var subtitlePos = new Vector2(
+            ScreenCenter(subtitle, scale: GameSettings.UiSubtitleScale).X,
+            titlePos.Y + titleHeight + GameSettings.UiSubtitleSpacing);
+        return (titlePos, subtitlePos);
+    }
 }

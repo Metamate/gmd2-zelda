@@ -14,13 +14,7 @@ public class StartState(Game1 game) : GameStateBase(game)
 
     public override void Enter()
     {
-        var titleSize = Game1.DefaultFont.MeasureString(Title);
-        _titlePos = ScreenCenter(Title, GameSettings.UiTitleYOffset);
-
-        // Subtitle sits below the title; X is independently centred at subtitle scale
-        _subtitlePos = new Vector2(
-            ScreenCenter(Subtitle, scale: GameSettings.UiSubtitleScale).X,
-            _titlePos.Y + titleSize.Y + GameSettings.UiSubtitleSpacing);
+        (_titlePos, _subtitlePos) = CalculateTitleLayout(Title, Subtitle);
     }
 
     public override void Update(GameTime gameTime)

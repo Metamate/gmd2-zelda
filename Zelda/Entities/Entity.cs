@@ -51,16 +51,12 @@ public abstract class Entity : IEntity
     public bool IsInvulnerable { get; private set; }
     private float _invulnerableDuration;
     private float _invulnerableTimer;
-    private float _flashTimer;
-    private bool _flashTransparent;
 
     public void GoInvulnerable(float duration)
     {
         IsInvulnerable = true;
         _invulnerableDuration = duration;
         _invulnerableTimer = 0f;
-        _flashTimer = 0f;
-        _flashTransparent = false;
     }
 
     public void Damage(int amount) => Health -= amount;
@@ -83,20 +79,11 @@ public abstract class Entity : IEntity
         if (IsInvulnerable)
         {
             _invulnerableTimer += dt;
-            _flashTimer += dt;
-
-            if (_flashTimer > GameSettings.InvulFlashInterval)
-            {
-                _flashTimer = 0f;
-                _flashTransparent = !_flashTransparent;
-            }
 
             if (_invulnerableTimer >= _invulnerableDuration)
             {
                 IsInvulnerable = false;
                 _invulnerableTimer = 0f;
-                _flashTimer = 0f;
-                _flashTransparent = false;
             }
         }
 
@@ -106,12 +93,12 @@ public abstract class Entity : IEntity
 
     public void DrawSprite(SpriteBatch spriteBatch)
     {
-        Color drawColor = (IsInvulnerable && _flashTransparent)
-            ? Color.White * GameSettings.InvulFlashAlpha
-            : Color.White;
+        // Flash by alternating transparency based on elapsed invulnerability time.
+        bool flash = IsInvulnerable &&
+                     (_invulnerableTimer / GameSettings.InvulFlashInterval) % 2 < 1;
 
-        Vector2 drawPos = Position - SpriteOffset;
-        Sprite?.Region?.Draw(spriteBatch, drawPos, drawColor);
+        Color drawColor = flash ? Color.White * GameSettings.InvulFlashAlpha : Color.White;
+        Sprite?.Region?.Draw(spriteBatch, Position - SpriteOffset, drawColor);
     }
 
     public void Draw(SpriteBatch spriteBatch) => State?.Draw(spriteBatch);

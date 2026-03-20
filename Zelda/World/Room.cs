@@ -23,8 +23,6 @@ public class Room
     // Shared RNG exposed so entity states can use it
     public Random Random { get; } = new();
 
-    private readonly int _renderOffsetX = GameSettings.MapRenderOffsetX;
-    private readonly int _renderOffsetY = GameSettings.MapRenderOffsetY;
 
     public Room(Player player, Tileset tileset)
     {
@@ -144,6 +142,10 @@ public class Room
         Doorways.Add(new Doorway(Direction.Right, false, _tilemap.Tileset));
     }
 
+    // Collision is handled here rather than in a separate system because each
+    // interaction type has different consequences (damage, doors, death) that
+    // require access to room-level state.  Sword–enemy collision lives in
+    // PlayerSwingSwordState because it is tightly coupled to the swing animation.
     public void Update(GameTime gameTime)
     {
         _player.Update(gameTime);
@@ -189,8 +191,8 @@ public class Room
     public void Render(SpriteBatch spriteBatch)
     {
         int ts   = GameSettings.TileSize;
-        int offX = _renderOffsetX;
-        int offY = _renderOffsetY;
+        int offX = GameSettings.MapRenderOffsetX;
+        int offY = GameSettings.MapRenderOffsetY;
         int w    = GameSettings.MapWidth;
         int h    = GameSettings.MapHeight;
 

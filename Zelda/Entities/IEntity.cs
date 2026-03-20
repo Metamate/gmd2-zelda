@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Zelda.Entities;
 
+// Anything that exists in the room: players, enemies, objects, doorways.
+// For animated living things with health and AI, see the Entity base class.
 public interface IEntity
 {
     public Vector2 Position { get; set; }
