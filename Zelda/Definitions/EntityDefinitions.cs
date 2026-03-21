@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -89,7 +90,7 @@ public static class EntityDefinitions
     private static AnimDef ParseAnimDef(XElement e) => new(
         Name:     e.Attribute("name").Value,
         Frames:   e.Attribute("frames").Value.Split(',').Select(int.Parse).ToArray(),
-        Interval: double.Parse(e.Attribute("interval").Value),
+        Interval: double.Parse(e.Attribute("interval").Value, CultureInfo.InvariantCulture),
         Loop:     e.Attribute("loop")?.Value != "false"
     );
 
