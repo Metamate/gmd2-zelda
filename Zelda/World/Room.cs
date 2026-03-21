@@ -16,9 +16,9 @@ public class Room
     private readonly Tilemap _tilemap;
     private readonly Player _player;
 
-    public List<Enemy> Enemies { get; } = new();
-    public List<GameObject> Objects { get; } = new();
-    public List<Doorway> Doorways { get; } = new();
+    public List<Enemy> Enemies { get; } = [];
+    public List<GameObject> Objects { get; } = [];
+    public List<Doorway> Doorways { get; } = [];
 
     // Shared RNG exposed so entity states can use it
     public Random Random { get; } = new();
