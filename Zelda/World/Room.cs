@@ -181,7 +181,7 @@ public class Room
             obj.Update(gameTime);
 
             if (_player.Collides(obj))
-                obj.OnCollide?.Invoke();
+                obj.Collide();
         }
     }
 

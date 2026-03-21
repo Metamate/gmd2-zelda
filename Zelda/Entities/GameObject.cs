@@ -26,9 +26,9 @@ public class GameObject(
 
     private readonly TextureAtlas _atlas = atlas;
 
-    // Callback invoked when the player collides with this object.
-    // Use += to subscribe; never assign with = (would silently discard prior handlers).
-    public Action OnCollide { get; set; }
+    public event Action OnCollide;
+
+    public void Collide() => OnCollide?.Invoke();
 
     public Vector2 Position { get; set; }
     public int Width { get; set; } = width;
