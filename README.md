@@ -29,22 +29,34 @@ gmd2-zelda/
 │   ├── Core.cs            # XNA Game subclass — window, loop, scaling
 │   ├── Graphics/          # Sprite, AnimatedSprite, Tilemap, TextureAtlas, …
 │   └── Input/             # KeyboardInfo, InputManager
-└── Zelda/                 # Game-specific code
-    ├── Game1.cs           # Top-level game; owns the active GameState
-    ├── GameSettings.cs    # All magic numbers in one place
-    ├── Entities/          # IEntity, Entity, Player, Enemy, GameObject
-    ├── States/
-    │   ├── GameStates/    # StartState, PlayState, GameOverState
-    │   ├── EntityStates/  # EntityStateBase, EntityWalkState, EntityIdleState
-    │   └── PlayerStates/  # PlayerWalkState, PlayerIdleState, PlayerSwingSwordState
-    ├── World/             # Room, Dungeon, Doorway
-    ├── Definitions/       # XML loaders for entities and objects
-    ├── Input/             # GameController (keyboard → game actions)
-    ├── Graphics/          # Camera, DebugDraw
-    └── Audio/             # SoundManager
+├── Zelda/                 # Game-specific code
+│   ├── Game1.cs           # Top-level game; owns the active GameState
+│   ├── GameSettings.cs    # All magic numbers in one place
+│   ├── Entities/          # IEntity, Entity, Player, Enemy, GameObject
+│   ├── States/
+│   │   ├── GameStates/    # StartState, PlayState, GameOverState
+│   │   ├── EntityStates/  # EntityStateBase, EntityWalkState, EntityIdleState
+│   │   └── PlayerStates/  # PlayerWalkState, PlayerIdleState, PlayerSwingSwordState
+│   ├── World/             # Room, Dungeon, Doorway
+│   ├── Definitions/       # XML loaders for entities and objects
+│   ├── Input/             # GameController (keyboard → game actions)
+│   ├── Graphics/          # Camera, DebugDraw
+│   └── Audio/             # SoundManager
+└── Tools/
+    └── LabelTiles.cs      # Dev utility — annotates a spritesheet with tile indices
 ```
 
 The split between `GMDCore` and `Zelda` is intentional: `GMDCore` knows nothing about Zelda. The engine provides window management, a virtual-resolution scaler, input tracking, and sprite/animation primitives. Everything Zelda-specific lives in the `Zelda` project.
+
+### Tooling — `Tools/LabelTiles.cs`
+
+The XML data files reference tiles by their 0-based index into a spritesheet (e.g. `frames="9,10,11,10"` in `enemy_animations.xml`). Knowing which number corresponds to which tile by eye is impractical, so `LabelTiles.cs` is a small standalone script that takes a spritesheet, draws a grid over it with each tile's index number, and saves the result as a new image.
+
+```
+dotnet script LabelTiles.cs images/entities.png 16 16
+```
+
+It is a pure developer aid — it runs outside the game, produces no build artefacts, and is never referenced by the game code. This is a common pattern in game projects: small throwaway tools that make working with data files practical.
 
 ---
 
