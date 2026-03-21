@@ -6,16 +6,10 @@ using Zelda.World;
 
 namespace Zelda.States.PlayerStates;
 
-public class PlayerIdleState : EntityStateBase
+public class PlayerIdleState(Player player, Dungeon dungeon) : EntityStateBase(player)
 {
-    private readonly Player _player;
-    private readonly Dungeon _dungeon;
-
-    public PlayerIdleState(Player player, Dungeon dungeon) : base(player)
-    {
-        _player = player;
-        _dungeon = dungeon;
-    }
+    private readonly Player _player = player;
+    private readonly Dungeon _dungeon = dungeon;
 
     public override void Enter()
     {

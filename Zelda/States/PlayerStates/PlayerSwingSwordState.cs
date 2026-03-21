@@ -37,9 +37,9 @@ public class PlayerSwingSwordState(Player player, Dungeon dungeon) : EntityState
         };
 
         _player.ChangeAnimation(AnimationKeys.Sword(_player.Direction));
+        _player.Sprite.Restart();
 
         SoundManager.PlaySound("sword");
-        _player.Sprite.Refresh();
     }
 
     public override void Update(GameTime gameTime)

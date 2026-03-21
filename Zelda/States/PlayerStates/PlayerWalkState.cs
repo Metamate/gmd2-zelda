@@ -7,16 +7,10 @@ using Zelda.World;
 namespace Zelda.States.PlayerStates;
 
 // Extends EntityWalkState: adds player input handling and doorway transition detection.
-public class PlayerWalkState : EntityWalkState
+public class PlayerWalkState(Player player, Dungeon dungeon) : EntityWalkState(player)
 {
-    private readonly Player _player;
-    private readonly Dungeon _dungeon;
-
-    public PlayerWalkState(Player player, Dungeon dungeon) : base(player)
-    {
-        _player = player;
-        _dungeon = dungeon;
-    }
+    private readonly Player _player = player;
+    private readonly Dungeon _dungeon = dungeon;
 
     public override void Enter()
     {

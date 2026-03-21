@@ -28,7 +28,7 @@ public class AnimatedSprite : Sprite
         Region = _animation.Frames[0];
     }
 
-    public void Refresh()
+    public void Restart()
     {
         _currentFrame = 0;
         _elapsed = TimeSpan.Zero;
