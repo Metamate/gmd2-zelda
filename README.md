@@ -336,21 +336,60 @@ switchObj.OnCollide += () =>
 
 Manages the active room and the **room-transition animation**.
 
-`BeginShift(Direction)` (lines 53-99):
-- Creates the next `Room` via a factory delegate.
-- Computes `_shiftTarget` (where the camera should end up) and `_nextRoomOffset` (where the next room is placed in world space).
-- Stores the player's start/end tween positions.
+#### How a shift is triggered
 
-`Update` during a shift (lines 143-166):
+The chain starts in `PlayerWalkState`. Each frame, if the player bumped a wall, `CheckDoorwayTransition` probes one step ahead, checks whether a doorway at that position is open, and if so calls `_dungeon.BeginShift(_player.Direction)` (`PlayerWalkState.cs:51-77`).
+
+#### `BeginShift` — setting up the transition
+
+`BeginShift` (lines 53-99) sets up everything needed for the animation in one shot:
+
+1. Creates the next `Room` via the factory delegate and opens all its doorways (so the player can walk in from any side).
+2. Computes `_shiftTarget` — the final camera position. If moving right, the camera must travel one full virtual-screen width to the right:
+   ```csharp
+   _shiftTarget = direction switch
+   {
+       Direction.Left  => new Vector2(-vw, 0),
+       Direction.Right => new Vector2( vw, 0),
+       Direction.Up    => new Vector2(0, -vh),
+       Direction.Down  => new Vector2(0,  vh),
+   };
+   ```
+3. Places the next room at `_nextRoomOffset = _shiftTarget`. The next room never moves in world space — the camera lerp is what makes it slide into view.
+4. Stores `_shiftPlayerStart` (current position) and `_shiftPlayerEnd` (the matching entry point in the next room, one screen away), so the player appears to walk through the doorway.
+
+The spatial layout for a rightward shift looks like this:
+
+```
+ world space (before shift)
+┌─────────────────┐  ┌─────────────────┐
+│                 │  │                 │
+│  CurrentRoom    │  │   _nextRoom     │
+│                 │  │  (at x = +vw)   │
+└─────────────────┘  └─────────────────┘
+ camera at (0,0) ──────────────────────► camera lerps to (vw, 0)
+```
+
+#### `Update` during a shift
+
+While `_shifting` is true, `Room.Update` is **not called** — gameplay is frozen. Instead, `Dungeon.Update` only advances the animation:
+
 ```csharp
+// Dungeon.cs:147-161
 _shiftProgress = Math.Min(1f, _shiftProgress + dt / GameSettings.RoomShiftDuration);
 _camera.Position = Vector2.Lerp(Vector2.Zero, _shiftTarget, _shiftProgress);
 _player.Position = Vector2.Lerp(_shiftPlayerStart, _shiftPlayerEnd, _shiftProgress);
+_player.Sprite?.Update(gameTime);   // keep walk animation running
 ```
 
-The camera lerps from `(0, 0)` to `_shiftTarget` over `RoomShiftDuration` seconds. Because both rooms and the player are drawn through the same combined `camera.Transform * screenScaleMatrix`, the entire scene slides uniformly — no per-object offset arithmetic needed.
+Because both rooms and the player are drawn through the same `camera.Transform * screenScaleMatrix`, the entire scene slides uniformly — no per-object offset arithmetic needed.
 
-`FinishShift` (lines 101-141) snaps the player to the correct entry point, locks the new room's doors, and clears the transition state.
+#### `FinishShift` — landing in the new room
+
+When `_shiftProgress` reaches `1`, `FinishShift` (lines 101-141):
+1. Promotes `_nextRoom` to `CurrentRoom`.
+2. Snaps the player's position to the correct entry point inside the new room (the lerp endpoint lands just outside the wall; the snap places them just inside it).
+3. Locks all of the new room's doors — the player must find and press the switch to open them again.
 
 ---
 
@@ -514,13 +553,79 @@ All three passes use the same `worldTransform`, so the arch mask automatically f
 
 ## 11. Data-Driven Definitions
 
-Content is decoupled from code through XML loaders in `Zelda/Definitions/`.
+The rule in this codebase is: **content lives in XML, behaviour lives in C#**. Three loaders in `Zelda/Definitions/` enforce this.
 
-- **`EntityDefinitions`** loads `data/player_animations.xml` and `data/enemy_animations.xml`. It creates animation instances on demand via `CreateEnemyAnimations(type)`.
-- **`GameObjectDefinitions`** loads `data/object_definitions.xml`, mapping state names (e.g. `"unpressed"`) to spritesheet frame indices.
-- **`Doorway`** loads `data/door_layouts.xml` for the four directions × open/closed tile layouts.
+### Enemies — `EntityDefinitions` + `enemy_animations.xml`
 
-This separation means adding a new enemy type requires only an XML edit and a spritesheet update — no C# changes.
+Each enemy type is one `<Enemy>` block that declares its stats and its full set of directional animations as frame-index lists:
+
+```xml
+<!-- Zelda/Content/data/enemy_animations.xml -->
+<EnemyAnimations atlas="images/entities" frameWidth="16" frameHeight="16">
+  <Enemy type="skeleton" width="16" height="16" walkSpeed="20" health="1">
+    <Animation name="walk-down"  frames="9,10,11,10"  interval="0.2" />
+    <Animation name="idle-down"  frames="10"          interval="0.2" />
+    <!-- ... one entry per direction × state -->
+  </Enemy>
+  <Enemy type="slime" ...>
+    ...
+  </Enemy>
+</EnemyAnimations>
+```
+
+At startup, `EntityDefinitions.LoadContent` parses this once into two dictionaries keyed by type string: one for stats (`EnemyStats` records) and one for animation definitions. When `Room.GenerateEntities` spawns an enemy it calls:
+
+```csharp
+// EntityDefinitions.cs:99-103
+public static Dictionary<AnimationKey, Animation> CreateEnemyAnimations(string type) =>
+    _enemyDefs[type].ToDictionary(
+        d => AnimationKeys.Parse(d.Name),
+        d => _enemyAtlas.CreateAnimation(d.Frames, d.Interval, d.Loop)
+    );
+```
+
+Each call produces a fresh `Dictionary<AnimationKey, Animation>` for that enemy instance. The C# enemy code has no hardcoded frame numbers — it only knows animation *keys* like `AnimationKey.WalkDown`. Adding a new enemy type is an XML edit plus a spritesheet row; no C# changes required.
+
+### Interactive Objects — `GameObjectDefinitions` + `object_definitions.xml`
+
+Objects are even simpler. Each `<Object>` maps named states to frame indices:
+
+```xml
+<!-- Zelda/Content/data/object_definitions.xml -->
+<Object type="switch" atlas="images/switches" frameWidth="16" frameHeight="18"
+        width="16" height="16" defaultState="unpressed">
+  <State name="unpressed" frame="1" />
+  <State name="pressed"   frame="0" />
+</Object>
+```
+
+`GameObject.Draw` uses this at runtime:
+```csharp
+// GameObject.cs:45-49
+public void Draw(SpriteBatch spriteBatch)
+{
+    int frame = _stateFrames[State];   // State is "unpressed" or "pressed"
+    _atlas.GetRegion($"frame_{frame}").Draw(spriteBatch, Position, Color.White);
+}
+```
+
+The object renders whatever frame the XML says corresponds to its current state string. It has no `if` branches per type — the data drives both the visuals and the valid state names.
+
+### Door Tiles — `Doorway` + `door_layouts.xml`
+
+Each doorway is a 2×2 composite of tiles. The XML maps direction × open/closed to exactly four tile IDs plus offsets in tile units:
+
+```xml
+<!-- Zelda/Content/data/door_layouts.xml -->
+<Layout state="open" direction="left">
+  <Tile id="180" dx="-1" dy="0" />
+  <Tile id="181" dx="0"  dy="0" />
+  <Tile id="199" dx="-1" dy="1" />
+  <Tile id="200" dx="0"  dy="1" />
+</Layout>
+```
+
+`Doorway.Draw` picks the right layout dict and renders each tile relative to the doorway's position (`Doorway.cs:105-109`). Changing door art means updating the tile IDs in XML; the draw code never changes.
 
 ---
 
@@ -536,7 +641,53 @@ Both the game and its entities use the same `Enter / Update / Exit` pattern. The
 There is no `CollisionSystem` class. Each collision site is handled where it has natural access to the needed context (see section 7). This trades a central overview for locality — you look at a state or a room method and see exactly what that interaction does.
 
 ### Event-driven decoupling
-`OnPlayerDied` bubbles up: `Room` → `Dungeon` → `PlayState`. Each layer knows only about its direct child. `GameObject.OnCollide` lets the room wire switch behaviour without `GameObject` knowing anything about doors.
+
+Events are used to prevent lower-level classes from knowing about higher-level ones.
+
+**`OnPlayerDied` — bubbling up the call stack**
+
+When the player runs out of health, the consequence (transitioning to `GameOverState`) lives in `PlayState`. But the detection happens deep inside `Room.Update`. Rather than giving `Room` a reference to `PlayState`, the event bubbles up one layer at a time:
+
+```
+Room.OnPlayerDied  →  Dungeon.OnPlayerDied  →  PlayState handler
+```
+
+Each layer simply forwards the event to its own subscribers:
+```csharp
+// Dungeon.cs:49
+room.OnPlayerDied += () => OnPlayerDied?.Invoke();
+```
+
+`Room` knows nothing about `Dungeon`. `Dungeon` knows nothing about `PlayState`. Each class only references the thing directly below it.
+
+**`GameObject.OnCollide` — wiring behaviour without subclasses**
+
+`GameObject` is fully data-driven: its type, visuals, and states all come from XML. If it also defined behaviour through subclasses (a `SwitchGameObject`, a `ChestGameObject`, etc.), the data-driven design would collapse — you'd need a new class for every object type.
+
+Instead, `GameObject` exposes a single event:
+```csharp
+// GameObject.cs:29-31
+public event Action OnCollide;
+public void Collide() => OnCollide?.Invoke();
+```
+
+The *caller* — whoever creates the object and knows the game rules — subscribes to it with whatever logic is appropriate. In `Room.GenerateObjects`, the switch behaviour is wired inline:
+
+```csharp
+// Room.cs:123-132
+switchObj.OnCollide += () =>
+{
+    if (switchObj.State == "unpressed")
+    {
+        switchObj.State = "pressed";
+        foreach (var d in Doorways)
+            d.IsOpen = true;
+        SoundManager.PlaySound("door");
+    }
+};
+```
+
+`GameObject` itself has no `if (type == "switch")` branch anywhere. It just fires the event; what happens is entirely up to the subscriber. A new object type with completely different behaviour requires only an XML entry and a new `OnCollide` subscription — the `GameObject` class stays unchanged.
 
 ### Single source of truth for constants
 `GameSettings.cs` holds every magic number: tile sizes, walk speeds, enemy counts, flash intervals, etc. States and rooms reference it by name rather than embedding literals.
