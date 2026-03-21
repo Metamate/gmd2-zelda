@@ -3,7 +3,8 @@
     "allow": [
       "Bash(dotnet build:*)",
       "Bash(grep -E \"\\\\.\\(cs|cpp|c|h|java|go|rs|py|gml\\)$\")",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(cd:*)"
     ]
   }
 }
