@@ -20,13 +20,16 @@ public class Room
     public List<GameObject> Objects { get; } = [];
     public List<Doorway> Doorways { get; } = [];
 
+    // Raised when the player's health reaches zero; PlayState subscribes to this.
+    public event Action OnPlayerDied;
+
     // Shared RNG exposed so entity states can use it
     public Random Random { get; } = new();
 
 
     public Room(Player player, Tileset tileset)
     {
-        _player  = player;
+        _player = player;
         _tilemap = new Tilemap(tileset, GameSettings.MapWidth, GameSettings.MapHeight);
         GenerateWallsAndFloors();
         GenerateEntities();
@@ -46,15 +49,15 @@ public class Room
                 bool solid = x == 0 || x == w - 1 || y == 0 || y == h - 1;
                 int tileId;
 
-                if      (x == 0     && y == 0    ) tileId = GameSettings.TileTopLeftCorner;
-                else if (x == w - 1 && y == 0    ) tileId = GameSettings.TileTopRightCorner;
-                else if (x == 0     && y == h - 1) tileId = GameSettings.TileBottomLeftCorner;
+                if (x == 0 && y == 0) tileId = GameSettings.TileTopLeftCorner;
+                else if (x == w - 1 && y == 0) tileId = GameSettings.TileTopRightCorner;
+                else if (x == 0 && y == h - 1) tileId = GameSettings.TileBottomLeftCorner;
                 else if (x == w - 1 && y == h - 1) tileId = GameSettings.TileBottomRightCorner;
-                else if (x == 0    ) tileId = GameSettings.TileLeftWalls[Random.Next(GameSettings.TileLeftWalls.Length)];
+                else if (x == 0) tileId = GameSettings.TileLeftWalls[Random.Next(GameSettings.TileLeftWalls.Length)];
                 else if (x == w - 1) tileId = GameSettings.TileRightWalls[Random.Next(GameSettings.TileRightWalls.Length)];
-                else if (y == 0    ) tileId = GameSettings.TileTopWalls[Random.Next(GameSettings.TileTopWalls.Length)];
+                else if (y == 0) tileId = GameSettings.TileTopWalls[Random.Next(GameSettings.TileTopWalls.Length)];
                 else if (y == h - 1) tileId = GameSettings.TileBottomWalls[Random.Next(GameSettings.TileBottomWalls.Length)];
-                else                 tileId = GameSettings.TileFloors[Random.Next(GameSettings.TileFloors.Length)];
+                else tileId = GameSettings.TileFloors[Random.Next(GameSettings.TileFloors.Length)];
 
                 _tilemap.SetTile(x, y, new Tile(tileId, solid));
             }
@@ -63,7 +66,7 @@ public class Room
 
     private (int MinX, int MaxX, int MinY, int MaxY) GetSpawnBounds()
     {
-        int ts   = GameSettings.TileSize;
+        int ts = GameSettings.TileSize;
         int offX = GameSettings.MapRenderOffsetX;
         int offY = GameSettings.MapRenderOffsetY;
         int mapH = GameSettings.MapHeight;
@@ -83,16 +86,16 @@ public class Room
 
         for (int i = 0; i < GameSettings.RoomEnemyCount; i++)
         {
-            string type  = enemyTypes[Random.Next(enemyTypes.Length)];
-            var    stats = EntityDefinitions.GetEnemyStats(type);
+            string type = enemyTypes[Random.Next(enemyTypes.Length)];
+            var stats = EntityDefinitions.GetEnemyStats(type);
 
             var enemy = new Enemy
             {
-                Position  = new Vector2(Random.Next(minX, maxX + 1), Random.Next(minY, maxY + 1)),
-                Width     = stats.Width,
-                Height    = stats.Height,
+                Position = new Vector2(Random.Next(minX, maxX + 1), Random.Next(minY, maxY + 1)),
+                Width = stats.Width,
+                Height = stats.Height,
                 WalkSpeed = stats.WalkSpeed,
-                Health    = stats.Health
+                Health = stats.Health
             };
 
             foreach (var (key, anim) in EntityDefinitions.CreateEnemyAnimations(type))
@@ -136,9 +139,9 @@ public class Room
 
     private void GenerateDoorways()
     {
-        Doorways.Add(new Doorway(Direction.Up,    false, _tilemap.Tileset));
-        Doorways.Add(new Doorway(Direction.Down,  false, _tilemap.Tileset));
-        Doorways.Add(new Doorway(Direction.Left,  false, _tilemap.Tileset));
+        Doorways.Add(new Doorway(Direction.Up, false, _tilemap.Tileset));
+        Doorways.Add(new Doorway(Direction.Down, false, _tilemap.Tileset));
+        Doorways.Add(new Doorway(Direction.Left, false, _tilemap.Tileset));
         Doorways.Add(new Doorway(Direction.Right, false, _tilemap.Tileset));
     }
 
@@ -185,16 +188,13 @@ public class Room
         }
     }
 
-    // Raised when the player's health reaches zero; PlayState subscribes to this.
-    public event Action OnPlayerDied;
-
     public void Render(SpriteBatch spriteBatch)
     {
-        int ts   = GameSettings.TileSize;
+        int ts = GameSettings.TileSize;
         int offX = GameSettings.MapRenderOffsetX;
         int offY = GameSettings.MapRenderOffsetY;
-        int w    = GameSettings.MapWidth;
-        int h    = GameSettings.MapHeight;
+        int w = GameSettings.MapWidth;
+        int h = GameSettings.MapHeight;
 
         for (int y = 0; y < h; y++)
             for (int x = 0; x < w; x++)
