@@ -1,0 +1,53 @@
+<Project>
+  <!--
+    Builds the game's raw assets with the content builder (Builder/Builder.cs) before the game
+    compiles, and copies the result to the game's output folder. Import it in a game project:
+
+      <Import Project="..\Content\BuildContent.targets" />
+
+    By default the assets are read from Content/Assets. A project can use its own assets folder
+    by setting ContentAssets before the import:
+
+      <ContentAssets>$(MSBuildProjectDirectory)\Assets</ContentAssets>
+
+    Based on BuildContent.targets from MonoGame's EmptyGame template.
+  -->
+  <PropertyGroup>
+    <ContentAssets Condition="'$(ContentAssets)' == ''">$(MSBuildThisFileDirectory)Assets</ContentAssets>
+  </PropertyGroup>
+  <Target Name="BuildContent" AfterTargets="BeforeBuild" Condition="'$(DesignTimeBuild)' != 'true' And Exists('$(ContentAssets)')">
+    <PropertyGroup>
+      <ContentOutput>$([MSBuild]::NormalizePath('$(ProjectDir)', '$(OutputPath)').TrimEnd('\/'))</ContentOutput>
+      <ContentTemp>$([MSBuild]::NormalizePath('$(ProjectDir)', '$(IntermediateOutputPath)').TrimEnd('\/'))</ContentTemp>
+      <ContentSource>$([MSBuild]::NormalizeDirectory('$(ContentAssets)').TrimEnd('\/'))</ContentSource>
+      <ContentArgs>build -p $(MonoGamePlatform) -s "$(ContentSource)" -o "$(ContentOutput)" -i "$(ContentTemp)"</ContentArgs>
+      <ContentCommand>$(MSBuildThisFileDirectory)bin\Debug\Content</ContentCommand>
+    </PropertyGroup>
+    <MSBuild Projects="$(MSBuildThisFileDirectory)Content.csproj" Targets="Build" Properties="Configuration=Debug" RemoveProperties="TargetFramework;RuntimeIdentifier;RuntimeIdentifiers;SelfContained" />
+    <Exec Command="&quot;$(ContentCommand)&quot; $(ContentArgs)" WorkingDirectory="$(MSBuildThisFileDirectory)..\" CustomErrorRegularExpression="\[E\] .+" CustomWarningRegularExpression="\[W\] .+" />
+  </Target>
+  <Target Name="AddGeneratedContentAssets" AfterTargets="BuildContent" Condition="'$(DesignTimeBuild)' != 'true' And Exists('$(ContentAssets)')">
+    <ItemGroup>
+      <GeneratedAsset Include="$(ContentOutput)\Content\**\*" />
+
+      <!-- Post Process Android Assets -->
+      <AndroidAsset Include="@(GeneratedAsset)"
+        Condition="'$(MonoGamePlatform)' == 'Android'">
+        <Link>Content\%(GeneratedAsset.RecursiveDir)%(GeneratedAsset.Filename)%(GeneratedAsset.Extension)</Link>
+      </AndroidAsset>
+
+      <!-- Post Process iOS Bundle Resources -->
+      <BundleResource Include="@(GeneratedAsset)"
+        Condition="'$(MonoGamePlatform)' == 'iOS'">
+        <Link>Content\%(GeneratedAsset.RecursiveDir)%(GeneratedAsset.Filename)%(GeneratedAsset.Extension)</Link>
+      </BundleResource>
+
+      <!-- Copy content for `dotnet publish` builds -->
+      <Content Include="@(GeneratedAsset)"
+        Condition="'$(MonoGamePlatform)' != 'Android' And '$(MonoGamePlatform)' != 'iOS'">
+        <Link>Content\%(GeneratedAsset.RecursiveDir)%(GeneratedAsset.Filename)%(GeneratedAsset.Extension)</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+  </Target>
+</Project>

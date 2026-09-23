@@ -25,6 +25,9 @@ A top-down Zelda-like built on **MonoGame/XNA** in C#. This document walks throu
 
 ```
 gmd2-zelda/
+├── Content/               # Content builder: raw assets and the C# rules that build them
+│   ├── Assets/            # Images, font, sounds, XML data files
+│   └── Builder/           # Builder.cs — how each kind of asset is built
 ├── GMDCore/               # Reusable engine framework (no game logic)
 │   ├── Core.cs            # XNA Game subclass — window, loop, scaling
 │   ├── Graphics/          # Sprite, AnimatedSprite, Tilemap, TextureAtlas, …
@@ -572,7 +575,7 @@ The rule in this codebase is: **content lives in XML, behaviour lives in C#**. T
 Each enemy type is one `<Enemy>` block that declares its stats and its full set of directional animations as frame-index lists:
 
 ```xml
-<!-- Zelda/Content/data/enemy_animations.xml -->
+<!-- Content/Assets/data/enemy_animations.xml -->
 <EnemyAnimations atlas="images/entities" frameWidth="16" frameHeight="16">
   <Enemy type="skeleton" width="16" height="16" walkSpeed="20" health="1">
     <Animation name="walk-down"  frames="9,10,11,10"  interval="0.2" />
@@ -603,7 +606,7 @@ Each call produces a fresh `Dictionary<AnimationKey, Animation>` for that enemy 
 Objects are even simpler. Each `<Object>` maps named states to frame indices:
 
 ```xml
-<!-- Zelda/Content/data/object_definitions.xml -->
+<!-- Content/Assets/data/object_definitions.xml -->
 <Object type="switch" atlas="images/switches" frameWidth="16" frameHeight="18"
         width="16" height="16" defaultState="unpressed">
   <State name="unpressed" frame="1" />
@@ -628,7 +631,7 @@ The object renders whatever frame the XML says corresponds to its current state 
 Each doorway is a 2×2 composite of tiles. The XML maps direction × open/closed to exactly four tile IDs plus offsets in tile units:
 
 ```xml
-<!-- Zelda/Content/data/door_layouts.xml -->
+<!-- Content/Assets/data/door_layouts.xml -->
 <Layout state="open" direction="left">
   <Tile id="180" dx="-1" dy="0" />
   <Tile id="181" dx="0"  dy="0" />
@@ -703,3 +706,32 @@ switchObj.OnCollide += () =>
 
 ### Single source of truth for constants
 `GameSettings.cs` holds every magic number: tile sizes, walk speeds, enemy counts, flash intervals, etc. States and rooms reference it by name rather than embedding literals.
+
+---
+
+## Content
+
+The game's raw assets are built by the **content builder** (MonoGame 3.8.5+):
+
+```text
+Content/
+├── Assets/                  # The raw assets: images, font, sounds, XML data files
+├── Builder/Builder.cs       # The rules for building the assets, in C#
+├── BuildContent.targets     # Runs the builder when the game project builds
+└── Content.csproj
+```
+
+There is no `.mgcb` file and no MGCB Editor. `Builder.cs` decides how each kind of asset is
+processed. The game project imports `BuildContent.targets`, so building the game also builds
+the assets into its output folder, where `Content.Load` finds them.
+
+To add an asset, put it in `Content/Assets` and, if no existing rule matches it, add a rule
+in `Builder.cs`.
+
+## Running
+
+Requires the [.NET 10 SDK](https://dotnet.microsoft.com/download).
+
+```sh
+dotnet run --project Zelda
+```

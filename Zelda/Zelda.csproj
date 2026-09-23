@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
+    <MonoGamePlatform>DesktopGL</MonoGamePlatform>
     <RollForward>Major</RollForward>
     <PublishReadyToRun>false</PublishReadyToRun>
     <TieredCompilation>false</TieredCompilation>
@@ -24,9 +25,14 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.*" />
-    <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.*" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GMDCore\GMDCore.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Rebuild when any asset changes, even if no code changed. -->
+    <UpToDateCheckInput Include="..\Content\Assets\**\*" />
+  </ItemGroup>
+  <!-- Builds the raw assets with the content builder in ..\Content before compiling. -->
+  <Import Project="..\Content\BuildContent.targets" />
 </Project>

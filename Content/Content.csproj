@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The content builder: a small console app that builds the files in Assets/ into the
+    format the game loads at runtime. The rules for what to build and how are C# code in
+    Builder/Builder.cs. Game projects run it automatically through BuildContent.targets.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <!-- MonoGame's pipeline package depends on SharpDX 4.0.1, which pulls in old .NET Core 1.0
+         packages. They are flagged as vulnerable (NU1903) and use outdated runtime identifiers
+         (NETSDK1206). The builder is a build tool that never ships with the game, so we hide them. -->
+    <NoWarn>$(NoWarn);NU1903;NETSDK1206</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Assets/**/*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.Content.Pipeline" Version="3.8.*" />
+    <PackageReference Include="MonoGame.Framework.Native" Version="3.8.*">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="MonoGame.Library.FreeType" Version="2.13.2.*" />
+    <PackageReference Include="MonoGame.Library.MojoShader" Version="1.0.0.*" />
+    <PackageReference Include="MonoGame.Tool.Basisu" Version="2.0.2.*" />
+    <PackageReference Include="MonoGame.Tool.Crunch" Version="1.0.4.*" />
+    <PackageReference Include="MonoGame.Tool.Dxc" Version="1.8.2505.*" />
+    <PackageReference Include="MonoGame.Tool.FFmpeg" Version="7.0.0.*" />
+    <PackageReference Include="MonoGame.Tool.FFprobe" Version="7.0.0.*" />
+  </ItemGroup>
+
+</Project>
