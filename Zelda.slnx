@@ -1,5 +1,12 @@
 <Solution>
   <Project Path="Content/Content.csproj" />
   <Project Path="GMDCore/GMDCore.csproj" />
-  <Project Path="Zelda/Zelda.csproj" />
+  <Project Path="Zelda0/Zelda0.csproj" />
+  <Project Path="Zelda1/Zelda1.csproj" />
+  <Project Path="Zelda2/Zelda2.csproj" />
+  <Project Path="Zelda3/Zelda3.csproj" />
+  <Project Path="Zelda4/Zelda4.csproj" />
+  <Project Path="Zelda5/Zelda5.csproj" />
+  <Project Path="Zelda6/Zelda6.csproj" />
+  <Project Path="Zelda7/Zelda7.csproj" />
 </Solution>

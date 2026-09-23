@@ -1,0 +1,75 @@
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Zelda4.Graphics;
+using Zelda4.Entities;
+using Zelda4.Input;
+using Zelda4.States.EntityStates;
+using Zelda4.World;
+
+namespace Zelda4.States.PlayerStates;
+
+public class PlayerSwingSwordState(Player player, Room room) : EntityStateBase(player)
+{
+    private readonly Player _player = player;
+    private readonly Room _room = room;
+    private Rectangle _swordHitbox;
+
+    public override void Enter()
+    {
+        _player.SpriteOffset = new Vector2(GameSettings.PlayerSwordOffsetX, GameSettings.PlayerSpriteOffsetY);
+
+        // Build a sword hitbox in front of the player based on facing direction.
+        // Reach = half a tile; the hitbox is one full tile wide on the perpendicular axis.
+        int px = (int)_player.Position.X;
+        int py = (int)_player.Position.Y;
+        int reach = GameSettings.SwordReach;
+        int ts = GameSettings.TileSize;
+
+        int yOffset = GameSettings.SwordHitboxYOffset;
+        _swordHitbox = _player.Direction switch
+        {
+            Direction.Left => new Rectangle(px - reach, py + yOffset, reach, ts),
+            Direction.Right => new Rectangle(px + _player.Width, py + yOffset, reach, ts),
+            Direction.Up => new Rectangle(px, py - reach, ts, reach),
+            Direction.Down => new Rectangle(px, py + _player.Height, ts, reach),
+            _ => new Rectangle(px, py + _player.Height, ts, reach)
+        };
+
+        _player.ChangeAnimation(AnimationKeys.Sword(_player.Direction));
+        _player.Sprite.Restart();
+    }
+
+    public override void Update(GameTime gameTime)
+    {
+        // Check for sword hits against all enemies in the current room
+        foreach (var enemy in _room.Enemies)
+        {
+            if (!enemy.IsDead && _swordHitbox.Intersects(enemy.Bounds))
+            {
+                enemy.Damage(1);
+            }
+        }
+
+        // When the non-looping swing animation has completed, return to idle
+        // (animation is already advanced by Entity.Update called before State.Update)
+        if (_player.Sprite != null && _player.Sprite.TimesPlayed > 0)
+        {
+            _player.Sprite.TimesPlayed = 0;
+            _player.ChangeState(new PlayerIdleState(_player, _room));
+            return;
+        }
+
+        // Allow rapid re-swinging
+        if (GameController.SwingSword)
+        {
+            _player.ChangeState(new PlayerSwingSwordState(_player, _room));
+        }
+    }
+
+    public override void Draw(SpriteBatch spriteBatch)
+    {
+        _player.DrawSprite(spriteBatch);
+        // DebugDraw.FillRect(spriteBatch, _swordHitbox, Color.Red * 0.4f); // sword hitbox
+        // DebugDraw.FillRect(spriteBatch, _player.Hurtbox, Color.Green * 0.4f); // player hurtbox
+    }
+}

@@ -2,10 +2,29 @@
 
 A top-down Zelda-like built on **MonoGame/XNA** in C#. This document walks through the architecture from the ground up, pointing at relevant source code as it goes.
 
+## Steps
+
+The game is built up in steps. Each step is a separate project that builds on the previous
+one, so you can follow the code's evolution one concept at a time. Compare two neighbouring
+steps (e.g. with a diff tool) to see exactly what changed. This walkthrough describes the
+finished game, `Zelda7`.
+
+| Step | Topic | What's new |
+| --- | --- | --- |
+| `Zelda0` | Rooms | A room generated as a tilemap: walls, corners and random floor tiles (Enter: new room) |
+| `Zelda1` | Player | Top-down movement with idle and walk states; animations defined in XML |
+| `Zelda2` | Enemies | Enemy types defined in XML, and AI states (walk, idle) |
+| `Zelda3` | Combat | Sword hitbox, player hurtbox, damage, invulnerability, hearts HUD and game over |
+| `Zelda4` | Events | Player death becomes an event; a floor switch opens the doors via `OnCollide` |
+| `Zelda5` | Screen scrolling | The dungeon, a camera, and tweened transitions between rooms |
+| `Zelda6` | Stencil | The player disappears into the door arches (stencil buffer) |
+| `Zelda7` | Audio | Music and sound effects (the finished game) |
+
 ---
 
 ## Table of Contents
 
+- [Steps](#steps)
 1. [Project Structure](#1-project-structure)
 2. [The Game Loop](#2-the-game-loop)
 3. [Game State Machine](#3-game-state-machine)
@@ -32,7 +51,7 @@ gmd2-zelda/
 │   ├── Core.cs            # XNA Game subclass — window, loop, scaling
 │   ├── Graphics/          # Sprite, AnimatedSprite, Tilemap, TextureAtlas, …
 │   └── Input/             # KeyboardInfo, InputManager
-├── Zelda/                 # Game-specific code
+├── Zelda0/ … Zelda7/      # The game, step by step (Zelda7 is the finished game)
 │   ├── Game1.cs           # Top-level game; owns the active GameState
 │   ├── GameSettings.cs    # All magic numbers in one place
 │   ├── Entities/          # IEntity, Entity, Player, Enemy, GameObject
@@ -49,7 +68,7 @@ gmd2-zelda/
     └── LabelTiles.cs      # Dev utility — annotates a spritesheet with tile indices
 ```
 
-The split between `GMDCore` and `Zelda` is intentional: `GMDCore` knows nothing about Zelda. The engine provides window management, a virtual-resolution scaler, input tracking, and sprite/animation primitives. Everything Zelda-specific lives in the `Zelda` project.
+The split between `GMDCore` and the game projects is intentional: `GMDCore` knows nothing about Zelda. The engine provides window management, a virtual-resolution scaler, input tracking, and sprite/animation primitives. Everything Zelda-specific lives in the `Zelda0`–`Zelda7` projects.
 
 ### Tooling — `Tools/LabelTiles.cs`
 
@@ -84,7 +103,7 @@ protected override void Update(GameTime gameTime)
 
 `Core` also maintains a **virtual resolution** (384 × 216). On every resize it recalculates `ScreenScaleMatrix` so the game always renders at that resolution regardless of window size (`Core.cs:56-86`).
 
-### Layer 2 — `Game1` (`Zelda/Game1.cs`)
+### Layer 2 — `Game1` (`Zelda7/Game1.cs`)
 
 ```csharp
 // Game1.cs:49-60
@@ -150,7 +169,7 @@ public void SetState(GameStateBase newState)
 Everything that lives in a room implements one interface:
 
 ```csharp
-// Zelda/Entities/IEntity.cs:8-19
+// Zelda7/Entities/IEntity.cs:8-19
 public interface IEntity
 {
     Vector2 Position { get; set; }
@@ -167,7 +186,7 @@ public interface IEntity
 
 There are three concrete implementations:
 
-### `Entity` (abstract) — `Zelda/Entities/Entity.cs`
+### `Entity` (abstract) — `Zelda7/Entities/Entity.cs`
 
 Animated living things with health and a state machine.
 
@@ -202,7 +221,7 @@ public virtual void Update(GameTime gameTime)
 
 Notice that `Entity.Update` advances the animation **before** it calls `State.Update`. This means states see the sprite already updated for this frame — they must not advance it a second time.
 
-### `Player` — `Zelda/Entities/Player.cs`
+### `Player` — `Zelda7/Entities/Player.cs`
 
 Adds a **Hurtbox**: collision uses only the bottom half of the sprite, which gives a top-down perspective feel (the "feet" collide, not the head).
 
@@ -221,11 +240,11 @@ public override bool Collides(IEntity other) =>
     Collidable && other.Collidable && Hurtbox.Intersects(other.Bounds);
 ```
 
-### `Enemy` — `Zelda/Entities/Enemy.cs`
+### `Enemy` — `Zelda7/Entities/Enemy.cs`
 
 Extends `Entity`. Adds `ProcessAI(Room room, GameTime gameTime)` which is called by `Room.Update` before `enemy.Update`. The AI logic is delegated to the current state's `ProcessAI` override.
 
-### `GameObject` — `Zelda/Entities/GameObject.cs`
+### `GameObject` — `Zelda7/Entities/GameObject.cs`
 
 Static interactive objects (floor switches, chests). No health, no state machine, no AI.
 
@@ -251,7 +270,7 @@ Behaviour is wired externally via the `OnCollide` event rather than through subc
 
 The **state machine** is the backbone of all entity behaviour.
 
-### `EntityStateBase` — `Zelda/States/EntityStates/EntityStateBase.cs`
+### `EntityStateBase` — `Zelda7/States/EntityStates/EntityStateBase.cs`
 
 ```csharp
 public abstract class EntityStateBase
@@ -268,7 +287,7 @@ public abstract class EntityStateBase
 
 States hold a reference to their owner entity. Transitions are always triggered from inside a state by calling `Entity.ChangeState(new SomeOtherState(...))`.
 
-### `EntityWalkState` — `Zelda/States/EntityStates/EntityWalkState.cs`
+### `EntityWalkState` — `Zelda7/States/EntityStates/EntityWalkState.cs`
 
 Used by both enemies and (as a base) the player. `Update` moves the entity in its current direction and wall-clamps it, setting `Bumped = true` if it hit a wall.
 
@@ -283,7 +302,7 @@ Entity.Position += Entity.Direction.ToVector2() * Entity.WalkSpeed * dt;
 
 Player states extend or parallel the entity states but read from `GameController` instead of running AI.
 
-**`PlayerWalkState`** (`Zelda/States/PlayerStates/PlayerWalkState.cs`):
+**`PlayerWalkState`** (`Zelda7/States/PlayerStates/PlayerWalkState.cs`):
 1. Reads input and updates `_player.Direction`.
 2. Calls `base.Update(gameTime)` — the inherited `EntityWalkState.Update` — to move and wall-clamp.
 3. If `Bumped`, probes one step ahead for an open doorway; if found, calls `_dungeon.BeginShift`.
@@ -296,7 +315,7 @@ if (Bumped)
     CheckDoorwayTransition(gameTime);
 ```
 
-**`PlayerSwingSwordState`** (`Zelda/States/PlayerStates/PlayerSwingSwordState.cs`):
+**`PlayerSwingSwordState`** (`Zelda7/States/PlayerStates/PlayerSwingSwordState.cs`):
 - `Enter` builds a `_swordHitbox` rectangle in front of the player based on facing direction.
 - `Update` checks each enemy's `Bounds` against `_swordHitbox` every frame.
 - The animation is non-looping; when `_player.Sprite.TimesPlayed > 0` the swing is over and the state transitions back to `PlayerIdleState`.
@@ -323,7 +342,7 @@ PlayerIdleState  ──(move key)──►  PlayerWalkState  ──(space)──
 
 ## 6. The Room and Dungeon
 
-### `Room` — `Zelda/World/Room.cs`
+### `Room` — `Zelda7/World/Room.cs`
 
 A `Room` is generated procedurally in its constructor:
 
@@ -347,7 +366,7 @@ switchObj.OnCollide += () =>
 };
 ```
 
-### `Dungeon` — `Zelda/World/Dungeon.cs`
+### `Dungeon` — `Zelda7/World/Dungeon.cs`
 
 Manages the active room and the **room-transition animation**.
 
@@ -445,7 +464,7 @@ public bool WasKeyJustPressed(Keys key) =>
 
 `WasKeyJustPressed` fires for exactly **one frame** (the transition from up to down). This is how sword-swing avoids auto-firing while held.
 
-### `GameController` — `Zelda/Input/GameController.cs`
+### `GameController` — `Zelda7/Input/GameController.cs`
 
 A static class that translates raw keys into named game actions:
 
@@ -520,7 +539,7 @@ The expression `(timer / interval) % 2 < 1` alternates between 0 and 1 twice per
 
 ### Camera and Screen Scaling
 
-`Camera` (`Zelda/Graphics/Camera.cs`) is minimal — just a position and a translation matrix:
+`Camera` (`Zelda7/Graphics/Camera.cs`) is minimal — just a position and a translation matrix:
 ```csharp
 public Matrix Transform => Matrix.CreateTranslation(-Position.X, -Position.Y, 0);
 ```
@@ -568,7 +587,7 @@ All three passes use the same `worldTransform`, so the arch mask automatically f
 
 ## 11. Data-Driven Definitions
 
-The rule in this codebase is: **content lives in XML, behaviour lives in C#**. Three loaders in `Zelda/Definitions/` enforce this.
+The rule in this codebase is: **content lives in XML, behaviour lives in C#**. Three loaders in `Zelda7/Definitions/` enforce this.
 
 ### Enemies — `EntityDefinitions` + `enemy_animations.xml`
 
@@ -711,7 +730,7 @@ switchObj.OnCollide += () =>
 
 ## Content
 
-The game's raw assets are built by the **content builder** (MonoGame 3.8.5+):
+All steps share the same raw assets, built by the **content builder** (MonoGame 3.8.5+):
 
 ```text
 Content/
@@ -722,7 +741,7 @@ Content/
 ```
 
 There is no `.mgcb` file and no MGCB Editor. `Builder.cs` decides how each kind of asset is
-processed. The game project imports `BuildContent.targets`, so building the game also builds
+processed. Each step project imports `BuildContent.targets`, so building a step also builds
 the assets into its output folder, where `Content.Load` finds them.
 
 To add an asset, put it in `Content/Assets` and, if no existing rule matches it, add a rule
@@ -733,5 +752,5 @@ in `Builder.cs`.
 Requires the [.NET 10 SDK](https://dotnet.microsoft.com/download).
 
 ```sh
-dotnet run --project Zelda
+dotnet run --project Zelda7
 ```
