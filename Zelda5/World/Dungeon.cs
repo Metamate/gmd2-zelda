@@ -1,4 +1,5 @@
 using System;
+using GMDCore.Tweening;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Zelda5.Entities;
@@ -17,18 +18,16 @@ public class Dungeon
     private Room _nextRoom;
 
     // Camera whose Transform is combined with the screen-scale matrix each frame.
-    // During a shift it lerps from (0,0) to _shiftTarget; everything rendered through
+    // During a shift it is tweened from (0,0) to _shiftTarget; everything rendered through
     // the combined matrix moves automatically — no per-object offset arithmetic needed.
     private readonly Camera _camera = new();
     private Vector2 _shiftTarget;
 
-    // The next room is placed at _shiftTarget and stays there; the camera lerp
-    // handles making it slide into view.
+    // The next room is placed at _shiftTarget and stays there; the camera tween
+    // makes it slide into view.
     private Vector2 _nextRoomOffset;
 
-    private Vector2 _shiftPlayerStart;
-    private Vector2 _shiftPlayerEnd;
-    private float _shiftProgress;
+    private readonly TweenManager _tweens = new();
     private bool _shifting;
     private Direction _shiftDirection;
 
@@ -79,13 +78,13 @@ public class Dungeon
             _ => Vector2.Zero
         };
 
-        // The next room sits at _shiftTarget and never moves; the camera lerp
+        // The next room sits at _shiftTarget and never moves; the camera tween
         // brings it into view.
         _nextRoomOffset = _shiftTarget;
 
-        // Store player tween endpoints so they walk through the doorway
-        _shiftPlayerStart = _player.Position;
-        _shiftPlayerEnd = direction switch
+        // Where the player walks to through the doorway
+        Vector2 playerStart = _player.Position;
+        Vector2 playerEnd = direction switch
         {
             Direction.Right => new Vector2(vw  + offX + ts,                             _player.Position.Y),
             Direction.Left  => new Vector2(-vw + offX + mapW * ts - ts - _player.Width, _player.Position.Y),
@@ -94,7 +93,13 @@ public class Dungeon
             _ => _player.Position
         };
 
-        _shiftProgress = 0f;
+        // Move the camera to the next room and walk the player through the doorway, both
+        // over the same time. Everything rendered through the combined camera and
+        // screen-scale matrix shifts with the camera. When the tween ends, the shift is done.
+        _tweens.Tween(GameSettings.RoomShiftDuration)
+            .Add(t => _camera.Position = Vector2.Lerp(Vector2.Zero, _shiftTarget, t), 0f, 1f)
+            .Add(t => _player.Position = Vector2.Lerp(playerStart, playerEnd, t), 0f, 1f)
+            .Finish(FinishShift);
     }
 
     private void FinishShift()
@@ -141,21 +146,10 @@ public class Dungeon
     {
         if (_shifting)
         {
-            float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
-            _shiftProgress = Math.Min(1f, _shiftProgress + dt / GameSettings.RoomShiftDuration);
-
-            // Move the camera toward _shiftTarget; everything rendered through the
-            // combined camera+screen-scale matrix shifts automatically.
-            _camera.Position = Vector2.Lerp(Vector2.Zero, _shiftTarget, _shiftProgress);
-
-            // Tween the player through the doorway
-            _player.Position = Vector2.Lerp(_shiftPlayerStart, _shiftPlayerEnd, _shiftProgress);
+            _tweens.Update(gameTime);
 
             // Keep the player animation running during the transition
             _player.Sprite?.Update(gameTime);
-
-            if (_shiftProgress >= 1f)
-                FinishShift();
         }
         else
         {

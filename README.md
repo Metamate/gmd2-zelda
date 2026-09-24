@@ -31,6 +31,8 @@ Compared with the core in [gmd2-platformer](https://github.com/Metamate/gmd2-pla
   as a sword swing.
 - `Graphics/TextureAtlas`: `FromGrid` splits a sprite sheet into equal frames, and
   `CreateAnimation` builds an animation from frame numbers.
+- `Tweening/` (new): tweens, timers and callbacks (`Tween`, `After`, `Every`), used for the
+  room transition.
 
 ## Table of Contents
 
@@ -386,7 +388,7 @@ The chain starts in `PlayerWalkState`. Each frame, if the player bumped a wall, 
 
 #### `BeginShift` — setting up the transition
 
-`BeginShift` (lines 53-99) sets up everything needed for the animation in one shot:
+`BeginShift` (lines 52-104) sets up everything needed for the animation in one shot:
 
 1. Creates the next `Room` via the factory delegate and opens all its doorways (so the player can walk in from any side).
 2. Computes `_shiftTarget` — the final camera position. If moving right, the camera must travel one full virtual-screen width to the right:
@@ -399,8 +401,15 @@ The chain starts in `PlayerWalkState`. Each frame, if the player bumped a wall, 
        Direction.Down  => new Vector2(0,  vh),
    };
    ```
-3. Places the next room at `_nextRoomOffset = _shiftTarget`. The next room never moves in world space — the camera lerp is what makes it slide into view.
-4. Stores `_shiftPlayerStart` (current position) and `_shiftPlayerEnd` (the matching entry point in the next room, one screen away), so the player appears to walk through the doorway.
+3. Places the next room at `_nextRoomOffset = _shiftTarget`. The next room never moves in world space — the camera tween is what makes it slide into view.
+4. Computes where the player ends up (the matching entry point in the next room, one screen away), so the player appears to walk through the doorway.
+5. Starts one tween that moves the camera and the player together, and calls `FinishShift` when it ends:
+   ```csharp
+   _tweens.Tween(GameSettings.RoomShiftDuration)
+       .Add(t => _camera.Position = Vector2.Lerp(Vector2.Zero, _shiftTarget, t), 0f, 1f)
+       .Add(t => _player.Position = Vector2.Lerp(playerStart, playerEnd, t), 0f, 1f)
+       .Finish(FinishShift);
+   ```
 
 The spatial layout for a rightward shift looks like this:
 
@@ -411,18 +420,16 @@ The spatial layout for a rightward shift looks like this:
 │  CurrentRoom    │  │   _nextRoom     │
 │                 │  │  (at x = +vw)   │
 └─────────────────┘  └─────────────────┘
- camera at (0,0) ──────────────────────► camera lerps to (vw, 0)
+ camera at (0,0) ──────────────────────► camera tweens to (vw, 0)
 ```
 
 #### `Update` during a shift
 
-While `_shifting` is true, `Room.Update` is **not called** — gameplay is frozen. Instead, `Dungeon.Update` only advances the animation:
+While `_shifting` is true, `Room.Update` is **not called** — gameplay is frozen. Instead, `Dungeon.Update` only advances the tween:
 
 ```csharp
-// Dungeon.cs:147-161
-_shiftProgress = Math.Min(1f, _shiftProgress + dt / GameSettings.RoomShiftDuration);
-_camera.Position = Vector2.Lerp(Vector2.Zero, _shiftTarget, _shiftProgress);
-_player.Position = Vector2.Lerp(_shiftPlayerStart, _shiftPlayerEnd, _shiftProgress);
+// Dungeon.cs:148-161
+_tweens.Update(gameTime);
 _player.Sprite?.Update(gameTime);   // keep walk animation running
 ```
 
@@ -430,9 +437,9 @@ Because both rooms and the player are drawn through the same `camera.Transform *
 
 #### `FinishShift` — landing in the new room
 
-When `_shiftProgress` reaches `1`, `FinishShift` (lines 101-141):
+When the tween ends, it calls `FinishShift` (lines 106-146), which:
 1. Promotes `_nextRoom` to `CurrentRoom`.
-2. Snaps the player's position to the correct entry point inside the new room (the lerp endpoint lands just outside the wall; the snap places them just inside it).
+2. Snaps the player's position to the correct entry point inside the new room (the tween endpoint lands just outside the wall; the snap places them just inside it).
 3. Locks all of the new room's doors — the player must find and press the switch to open them again.
 
 ---
@@ -565,7 +572,7 @@ Camera translation happens in virtual-pixel space first, then everything is scal
 
 ## 10. The 3-Pass Stencil Trick
 
-The doorway arches create an illusion: the player sprite visually "disappears into" the tunnel as they walk through. This is achieved with a stencil buffer in three draw passes (`Dungeon.Render`, lines 202-239).
+The doorway arches create an illusion: the player sprite visually "disappears into" the tunnel as they walk through. This is achieved with a stencil buffer in three draw passes (`Dungeon.Render`, lines 196-233).
 
 **Pass 1** — Render rooms and all entities normally.
 
@@ -574,7 +581,7 @@ The doorway arches create an illusion: the player sprite visually "disappears in
 **Pass 3** — Redraw the player, but only where `stencil == 0` (outside the arch). Inside the arch the player is clipped out.
 
 ```csharp
-// Dungeon.cs:223-238
+// Dungeon.cs:217-232
 // Pass 2: write stencil mask
 spriteBatch.Begin(
     transformMatrix:   worldTransform,
@@ -698,7 +705,7 @@ Room.OnPlayerDied  →  Dungeon.OnPlayerDied  →  PlayState handler
 
 Each layer simply forwards the event to its own subscribers:
 ```csharp
-// Dungeon.cs:49
+// Dungeon.cs:48
 room.OnPlayerDied += () => OnPlayerDied?.Invoke();
 ```
 
