@@ -20,6 +20,9 @@
   <ItemGroup>
     <PackageReference Include="MonoGame.Framework.Content.Pipeline" Version="3.8.*" />
     <PackageReference Include="MonoGame.Framework.Native" Version="3.8.*" PrivateAssets="All" />
+    <!-- FFmpeg converts audio. Referenced directly so its programs are copied next to the builder. -->
+    <PackageReference Include="MonoGame.Tool.FFmpeg" Version="7.0.0.*" />
+    <PackageReference Include="MonoGame.Tool.FFprobe" Version="7.0.0.*" />
   </ItemGroup>
 
 </Project>
