@@ -22,6 +22,16 @@ finished game, `Zelda7`.
 
 ---
 
+## New in GMDCore
+
+Compared with the core in [gmd2-platformer](https://github.com/Metamate/gmd2-platformer):
+
+- `Graphics/Animation`: can play once instead of looping (`Loop`).
+- `Graphics/AnimatedSprite`: `Restart()` and `TimesPlayed`, for one-shot animations such
+  as a sword swing.
+- `Graphics/TextureAtlas`: `FromGrid` splits a sprite sheet into equal frames, and
+  `CreateAnimation` builds an animation from frame numbers.
+
 ## Table of Contents
 
 - [Steps](#steps)
