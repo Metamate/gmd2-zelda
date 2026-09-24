@@ -23,7 +23,10 @@ public class Room
     public Room(Player player, Tileset tileset)
     {
         _player = player;
-        _tilemap = new Tilemap(tileset, GameSettings.MapWidth, GameSettings.MapHeight);
+        _tilemap = new Tilemap(tileset, GameSettings.MapWidth, GameSettings.MapHeight)
+        {
+            Position = new Vector2(GameSettings.MapRenderOffsetX, GameSettings.MapRenderOffsetY)
+        };
         GenerateWallsAndFloors();
         GenerateEntities();
     }
@@ -126,18 +129,7 @@ public class Room
 
     public void Render(SpriteBatch spriteBatch)
     {
-        int ts = GameSettings.TileSize;
-        int offX = GameSettings.MapRenderOffsetX;
-        int offY = GameSettings.MapRenderOffsetY;
-        int w = GameSettings.MapWidth;
-        int h = GameSettings.MapHeight;
-
-        for (int y = 0; y < h; y++)
-            for (int x = 0; x < w; x++)
-            {
-                var tile = _tilemap.GetTile(x, y);
-                _tilemap.Tileset.GetTile(tile.GraphicId).Draw(spriteBatch, new Vector2(x * ts + offX, y * ts + offY), Color.White);
-            }
+        _tilemap.Draw(spriteBatch);
 
         foreach (var enemy in Enemies)
             enemy.Draw(spriteBatch);

@@ -262,7 +262,7 @@ public class GameObject(...) : IEntity
 }
 ```
 
-Behaviour is wired externally via the `OnCollide` event rather than through subclasses, because objects are loaded from XML and a subclass per object type would defeat that purpose (see the comment at `Room.cs:121-122`).
+Behaviour is wired externally via the `OnCollide` event rather than through subclasses, because objects are loaded from XML and a subclass per object type would defeat that purpose (see the comment at `Room.cs:127-128`).
 
 ---
 
@@ -346,14 +346,14 @@ PlayerIdleState  ──(move key)──►  PlayerWalkState  ──(space)──
 
 A `Room` is generated procedurally in its constructor:
 
-1. **`GenerateWallsAndFloors`** (lines 37-62) — fills a `Tilemap` using tile IDs from `GameSettings`, randomly selecting wall variants.
-2. **`GenerateEntities`** (lines 79-103) — spawns `GameSettings.RoomEnemyCount` enemies at random positions. Types and stats come from `EntityDefinitions`.
-3. **`GenerateObjects`** (lines 106-134) — places a floor switch and wires its `OnCollide` event inline.
-4. **`GenerateDoorways`** (lines 137-143) — creates four `Doorway` instances (one per direction), all initially closed.
+1. **`GenerateWallsAndFloors`** (lines 43-68) — fills a `Tilemap` using tile IDs from `GameSettings`, randomly selecting wall variants. The tilemap's `Position` places the room on screen, so `Render` just calls `_tilemap.Draw`.
+2. **`GenerateEntities`** (lines 85-110) — spawns `GameSettings.RoomEnemyCount` enemies at random positions. Types and stats come from `EntityDefinitions`.
+3. **`GenerateObjects`** (lines 112-141) — places a floor switch and wires its `OnCollide` event inline.
+4. **`GenerateDoorways`** (lines 143-149) — creates four `Doorway` instances (one per direction), all initially closed.
 
 The switch behaviour is wired right in the generator:
 ```csharp
-// Room.cs:123-132
+// Room.cs:129-138
 switchObj.OnCollide += () =>
 {
     if (switchObj.State == "unpressed")
@@ -433,12 +433,12 @@ Collision is **not** handled in a central system. Each interaction type lives wh
 
 | Interaction | Where handled | Why |
 |---|---|---|
-| Player ↔ Enemy | `Room.Update` (lines 167-176) | Needs room-level state to trigger `OnPlayerDied` |
-| Player ↔ GameObject | `Room.Update` (lines 179-185) | Needs to reach doorways list to open doors |
+| Player ↔ Enemy | `Room.Update` (lines 173-182) | Needs room-level state to trigger `OnPlayerDied` |
+| Player ↔ GameObject | `Room.Update` (lines 185-191) | Needs to reach doorways list to open doors |
 | Sword ↔ Enemy | `PlayerSwingSwordState.Update` (lines 47-55) | Tightly coupled to sword animation frame |
 | Entity ↔ Wall | `EntityWalkState.Update` (lines 41-75) | Wall-clamp is part of movement |
 
-The comment in `Room.cs:145-148` explains this explicitly:
+The comment in `Room.cs:151-154` explains this explicitly:
 > Collision is handled here rather than in a separate system because each interaction type has different consequences (damage, doors, death) that require access to room-level state. Sword–enemy collision lives in PlayerSwingSwordState because it is tightly coupled to the swing animation.
 
 Player–enemy collision uses `Player.Collides(enemy)` which internally uses `Hurtbox`, while sword–enemy collision checks `_swordHitbox.Intersects(enemy.Bounds)` directly, giving the sword its own independent reach rectangle.
@@ -708,7 +708,7 @@ public void Collide() => OnCollide?.Invoke();
 The *caller* — whoever creates the object and knows the game rules — subscribes to it with whatever logic is appropriate. In `Room.GenerateObjects`, the switch behaviour is wired inline:
 
 ```csharp
-// Room.cs:123-132
+// Room.cs:129-138
 switchObj.OnCollide += () =>
 {
     if (switchObj.State == "unpressed")

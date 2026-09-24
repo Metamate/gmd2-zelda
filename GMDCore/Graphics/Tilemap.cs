@@ -8,6 +8,9 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace GMDCore.Graphics;
 
+// A grid of tiles drawn with one tileset. The game decides what the tiles mean: which
+// graphic each one uses and whether it is solid. For extra detail on top (e.g. grass on
+// the ground), draw a second tilemap over this one.
 public class Tilemap
 {
     private readonly Tile[] _tiles;
@@ -15,19 +18,19 @@ public class Tilemap
     public int Rows { get; }
     public int Columns { get; }
     public int Count { get; }
+    public Vector2 Position { get; set; }
     public Vector2 Scale { get; set; }
     public Tileset Tileset { get; set; }
-    public Tileset Topperset { get; set; }
     public float TileWidth => Tileset.TileWidth * Scale.X;
     public float TileHeight => Tileset.TileHeight * Scale.Y;
 
-    public Tilemap(Tileset tileset, int columns, int rows, Tileset topperset = null)
+    public Tilemap(Tileset tileset, int columns, int rows)
     {
         Tileset = tileset;
-        Topperset = topperset;
         Rows = rows;
         Columns = columns;
         Count = Columns * Rows;
+        Position = Vector2.Zero;
         Scale = Vector2.One;
         _tiles = new Tile[Count];
         Array.Fill(_tiles, Tile.Empty);
@@ -63,7 +66,7 @@ public class Tilemap
 
     public Vector2 TileToPoint(int column, int row)
     {
-        return new Vector2(column * TileWidth, row * TileHeight);
+        return Position + new Vector2(column * TileWidth, row * TileHeight);
     }
 
     public bool IsSolidAt(float x, float y)
@@ -71,15 +74,15 @@ public class Tilemap
         return GetTileAt(x, y)?.IsSolid ?? false;
     }
 
-    public float GetTileLeft(float x) => (int)(x / TileWidth) * TileWidth;
-    public float GetTileRight(float x) => ((int)(x / TileWidth) + 1) * TileWidth;
-    public float GetTileTop(float y) => (int)(y / TileHeight) * TileHeight;
-    public float GetTileBottom(float y) => ((int)(y / TileHeight) + 1) * TileHeight;
+    public float GetTileLeft(float x) => Position.X + (int)((x - Position.X) / TileWidth) * TileWidth;
+    public float GetTileRight(float x) => GetTileLeft(x) + TileWidth;
+    public float GetTileTop(float y) => Position.Y + (int)((y - Position.Y) / TileHeight) * TileHeight;
+    public float GetTileBottom(float y) => GetTileTop(y) + TileHeight;
 
     private Tile? GetTileAt(float x, float y)
     {
-        int column = (int)(x / TileWidth);
-        int row = (int)(y / TileHeight);
+        int column = (int)((x - Position.X) / TileWidth);
+        int row = (int)((y - Position.Y) / TileHeight);
 
         if (column < 0 || column >= Columns || row < 0 || row >= Rows)
         {
@@ -93,26 +96,18 @@ public class Tilemap
     {
         for (int i = 0; i < Count; i++)
         {
-            Tile tileData = _tiles[i];
+            Tile tile = _tiles[i];
 
-            int x = i % Columns;
-            int y = i / Columns;
-
-            Vector2 position = new(x * TileWidth, y * TileHeight);
-
-            // Draw base tile
-            if (tileData.GraphicId >= 0 && Tileset != null)
+            if (tile.IsEmpty)
             {
-                TextureRegion baseGraphic = Tileset.GetTile(tileData.GraphicId);
-                baseGraphic.Draw(spriteBatch, position, Color.White, 0.0f, Vector2.Zero, Scale, SpriteEffects.None, 1.0f);
+                continue;
             }
 
-            // Draw topper if it exists
-            if (tileData.HasTopper && Topperset != null)
-            {
-                TextureRegion topperGraphic = Topperset.GetTile(tileData.TopperId);
-                topperGraphic.Draw(spriteBatch, position, Color.White, 0.0f, Vector2.Zero, Scale, SpriteEffects.None, 1.0f);
-            }
+            int column = i % Columns;
+            int row = i / Columns;
+
+            TextureRegion graphic = Tileset.GetTile(tile.GraphicId);
+            graphic.Draw(spriteBatch, TileToPoint(column, row), Color.White, 0.0f, Vector2.Zero, Scale, SpriteEffects.None, 1.0f);
         }
     }
 
