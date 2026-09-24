@@ -1,0 +1,21 @@
+name: Build
+
+# Builds every step project (and its content) on each push, so a change to GMDCore
+# or the content builder can't silently break an earlier step.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Windows, because some fonts (e.g. Arial) come from the system.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet build
