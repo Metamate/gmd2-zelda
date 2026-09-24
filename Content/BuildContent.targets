@@ -1,19 +1,15 @@
 <Project>
   <!--
-    Builds the game's raw assets with the content builder (Builder/Builder.cs) before the game
-    compiles, and copies the result to the game's output folder. Import it in a game project:
+    Builds the game's raw assets in Content/Assets with the content builder (Builder/Builder.cs)
+    before the game compiles, and copies the result to the game's output folder. Import it in a
+    game project:
 
       <Import Project="..\Content\BuildContent.targets" />
-
-    By default the assets are read from Content/Assets. A project can use its own assets folder
-    by setting ContentAssets before the import:
-
-      <ContentAssets>$(MSBuildProjectDirectory)\Assets</ContentAssets>
 
     Based on BuildContent.targets from MonoGame's EmptyGame template.
   -->
   <PropertyGroup>
-    <ContentAssets Condition="'$(ContentAssets)' == ''">$(MSBuildThisFileDirectory)Assets</ContentAssets>
+    <ContentAssets>$(MSBuildThisFileDirectory)Assets</ContentAssets>
   </PropertyGroup>
   <ItemGroup>
     <!-- Rebuild when an asset changes, even if no code changed. -->
